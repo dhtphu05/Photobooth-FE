@@ -13,6 +13,7 @@ interface PhotoEditorProps {
   videoClips: [Blob | null, Blob | null, Blob | null, Blob | null]
   onExit: () => void
   onReset: () => void
+  onUpload?: (blob: Blob) => Promise<void>
 }
 
 type Filter = "none" | "bw" | "vintage" | "kpop" | "dreamy"
@@ -30,7 +31,7 @@ const frames = [
   { id: "none", name: "No Frame", url: null },
 ]
 
-export default function PhotoEditor({ photos, videoClips, onExit, onReset }: PhotoEditorProps) {
+export default function PhotoEditor({ photos, videoClips, onExit, onReset, onUpload }: PhotoEditorProps) {
   const [selectedFilter, setSelectedFilter] = useState<Filter>("none")
   const [selectedFrame, setSelectedFrame] = useState<string>("https://cdn.freehihi.com/68fdab4e38d77.png")
   const [isMirrored, setIsMirrored] = useState(true)
@@ -67,18 +68,24 @@ export default function PhotoEditor({ photos, videoClips, onExit, onReset }: Pho
         scrollX: -window.scrollX,
       })
 
-      const dataUrl = canvas.toDataURL("image/png")
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
 
-      // Save to localStorage
-      StorageManager.saveSession(dataUrl)
-
-      // Download file
-      const link = document.createElement("a")
-      link.download = "photoxinhh-strip.png"
-      link.href = dataUrl
-      link.click()
+      // If onUpload is provided, convert to blob and upload
+      if (onUpload) {
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            await onUpload(blob);
+          }
+        }, 'image/jpeg', 0.9);
+      } else {
+        // Fallback to simpler download behavior if no upload handler
+        const link = document.createElement("a")
+        link.download = "photoxinhh-strip.jpg"
+        link.href = dataUrl
+        link.click()
+      }
     } catch (err) {
-      console.error("Download failed:", err)
+      console.error("Download/Upload failed:", err)
     } finally {
       setIsDownloading(false)
     }
@@ -173,7 +180,7 @@ export default function PhotoEditor({ photos, videoClips, onExit, onReset }: Pho
                     ) : (
                       <>
                         <Download className="w-5 h-5 mr-2" />
-                        Tải Ảnh Dải (HD)
+                        {onUpload ? 'Tải Lên & Hoàn Tất' : 'Tải Ảnh Dải'}
                       </>
                     )}
                   </Button>
@@ -234,9 +241,8 @@ export default function PhotoEditor({ photos, videoClips, onExit, onReset }: Pho
               <Button
                 onClick={() => setIsMirrored(!isMirrored)}
                 variant={isMirrored ? "default" : "outline"}
-                className={`w-full h-12 rounded-full ${
-                  isMirrored ? "bg-black text-white" : "border-black text-black hover:bg-zinc-100"
-                }`}
+                className={`w-full h-12 rounded-full ${isMirrored ? "bg-black text-white" : "border-black text-black hover:bg-zinc-100"
+                  }`}
               >
                 <FlipHorizontal className="w-5 h-5 mr-2" />
                 {isMirrored ? "Đang Lật" : "Không Lật"}
@@ -251,9 +257,8 @@ export default function PhotoEditor({ photos, videoClips, onExit, onReset }: Pho
                     key={frame.id}
                     onClick={() => setSelectedFrame(frame.url || "")}
                     variant={selectedFrame === frame.url ? "default" : "outline"}
-                    className={`w-full h-12 rounded-full ${
-                      selectedFrame === frame.url ? "bg-black text-white" : "border-black text-black hover:bg-zinc-100"
-                    }`}
+                    className={`w-full h-12 rounded-full ${selectedFrame === frame.url ? "bg-black text-white" : "border-black text-black hover:bg-zinc-100"
+                      }`}
                   >
                     {frame.name}
                   </Button>
@@ -269,9 +274,8 @@ export default function PhotoEditor({ photos, videoClips, onExit, onReset }: Pho
                     key={filter}
                     onClick={() => setSelectedFilter(filter)}
                     variant={selectedFilter === filter ? "default" : "outline"}
-                    className={`w-full h-12 rounded-full ${
-                      selectedFilter === filter ? "bg-black text-white" : "border-black text-black hover:bg-zinc-100"
-                    }`}
+                    className={`w-full h-12 rounded-full ${selectedFilter === filter ? "bg-black text-white" : "border-black text-black hover:bg-zinc-100"
+                      }`}
                   >
                     {filters[filter].name}
                   </Button>
