@@ -210,17 +210,13 @@ const MonitorContent = () => {
       .map(index => rawPhotos[index])
       .filter((blob): blob is Blob => Boolean(blob));
 
-    // For frame-bao, we handle exactly 3 photos specifically.
-    // For others, we rely on requiredShots (usually 3 or 4).
     if (selectedFrameId !== 'frame-bao' && selectedBlobs.length !== requiredShots) {
       throw new Error('Thiếu ảnh được chọn');
     }
-    // If frame-bao but not 3 photos? The UI enforces selection limit, so we assume 3.
 
     const bitmaps = await Promise.all(selectedBlobs.map(blob => createImageBitmap(blob)));
     const canvas = document.createElement('canvas');
 
-    // Set dimensions based on frame type
     if (selectedFrameId === 'frame-bao') {
       canvas.width = 2480;
       canvas.height = 3508;
@@ -235,7 +231,6 @@ const MonitorContent = () => {
       throw new Error('Canvas không khả dụng');
     }
 
-    // Fill white background first
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -243,9 +238,9 @@ const MonitorContent = () => {
 
     if (selectedFrameId === 'frame-bao') {
       const slots = [
-        { x: 0.038, y: 0.195, w: 0.924, h: 0.365 }, // Slot Top
-        { x: 0.038, y: 0.585, w: 0.445, h: 0.175 }, // Slot Mid Left
-        { x: 0.515, y: 0.770, w: 0.445, h: 0.175 }, // Slot Bot Right
+        { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
+        { x: 0.038, y: 0.585, w: 0.445, h: 0.175 },
+        { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
       ];
 
       slots.forEach((slot, index) => {
@@ -256,7 +251,6 @@ const MonitorContent = () => {
           const dw = slot.w * canvas.width;
           const dh = slot.h * canvas.height;
 
-          // Crop to fill logic
           const srcRatio = bitmap.width / bitmap.height;
           const dstRatio = dw / dh;
           let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
@@ -278,11 +272,9 @@ const MonitorContent = () => {
       });
     }
 
-    // Cleanup
     bitmaps.forEach(bitmap => bitmap.close());
     ctx.filter = 'none';
 
-    // Draw Overlay
     const overlayUrl = FRAME_ASSETS[selectedFrameId] ?? null;
     if (overlayUrl) {
       try {
@@ -309,19 +301,36 @@ const MonitorContent = () => {
   }, [rawPhotos, requiredShots, selectedFilter, selectedFrameId, selectedPhotoIndices]);
 
   const composeVideoRecap = useCallback(async (): Promise<Blob | null> => {
-    const available = rawVideoClips.filter((clip): clip is Blob => Boolean(clip));
+    // 1. Get Selected Video Clips (based on valid photos chosen)
+    const available = selectedPhotoIndices
+      .map(index => rawVideoClips[index])
+      .filter((clip): clip is Blob => Boolean(clip));
+
     if (available.length === 0) {
+      // Fallback or explicit null
       return null;
     }
-    const slots = [...available];
-    while (slots.length < 4 && available.length > 0) {
+
+    // 2. Prepare Slots based on selected frame
+    // We treat video clips exactly like photos in the frame slots.
+    let slots: Blob[] = [...available];
+
+    // For 'frame-bao' we expect 3 items. If less, we loop.
+    // For standard frames, we expect `requiredShots`. 
+    const isFrameBao = selectedFrameId === 'frame-bao';
+    const targetCount = isFrameBao ? 3 : requiredShots;
+
+    while (slots.length < targetCount && available.length > 0) {
       slots.push(available[slots.length % available.length]);
     }
-    const clips = slots.slice(0, 4);
+    const clips = slots.slice(0, targetCount);
+
     if (typeof document === 'undefined' || typeof MediaRecorder === 'undefined') {
       return clips[0] ?? null;
     }
+
     try {
+      // 3. Create Video Elements for each clip
       const videos = await Promise.all(
         clips.map(
           blob =>
@@ -346,9 +355,38 @@ const MonitorContent = () => {
             }),
         ),
       );
+
+      // 4. Load Overlay Image if exists
+      let overlayImage: HTMLImageElement | null = null;
+      const overlayUrl = FRAME_ASSETS[selectedFrameId] ?? null;
+      if (overlayUrl) {
+        try {
+          const img = new Image();
+          img.crossOrigin = 'Anonymous';
+          img.src = overlayUrl;
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+          });
+          overlayImage = img;
+        } catch (e) {
+          console.warn('Overlay load failed for video', e);
+        }
+      }
+
+      // 5. Setup Canvas
       const canvas = document.createElement('canvas');
-      canvas.width = 720;
-      canvas.height = 1280;
+      // Use scaled dimensions for video to handle performance/file size
+      // Frame Bao ratio: 2480/3508
+      // Sticking to 1080 width for decent quality but manageable rendering
+      if (isFrameBao) {
+        canvas.width = 1080;
+        canvas.height = 1528; // 1080 * (3508/2480)
+      } else {
+        canvas.width = 1080;
+        canvas.height = 1920;
+      }
+
       const ctx = canvas.getContext('2d');
       if (!ctx || !canvas.captureStream) {
         videos.forEach(video => URL.revokeObjectURL(video.src));
@@ -367,44 +405,106 @@ const MonitorContent = () => {
           resolve(new Blob(chunks, { type: 'video/webm' }));
         };
       });
-      const cellHeight = canvas.height / 4;
+
+      // 6. Start Playback
       videos.forEach(video => {
         video.loop = true;
         video.currentTime = 0;
         void video.play();
       });
+
       recorder.start();
+
+      // Determine duration
       const durations = videos.map(video =>
         Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 3,
       );
+      // Play for at least the longest video loop x 2, or fixed time like 6s
       const targetDuration = Math.max(...durations, 3) * 2 * 1000;
-      let animationFrame = 0;
+
       const startTime = performance.now();
+
+      // 7. Animation Loop
       const drawFrame = () => {
-        ctx.fillStyle = '#000';
+        // Clear & Background
+        ctx.fillStyle = '#ffffff'; // White bg matches photo
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        videos.forEach((video, index) => {
-          ctx.drawImage(video, 0, index * cellHeight, canvas.width, cellHeight);
-        });
+
+        // Apply shared filter if any (simplified)
+        // ctx.filter = CANVAS_FILTER_MAP[selectedFilter] ?? 'none'; // Filters on video canvas can be heavy
+
+        // Draw slots
+        if (isFrameBao) {
+          const slots = [
+            { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
+            { x: 0.038, y: 0.585, w: 0.445, h: 0.175 },
+            { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
+          ];
+          slots.forEach((slot, index) => {
+            if (index < videos.length) {
+              const video = videos[index];
+              const dx = slot.x * canvas.width;
+              const dy = slot.y * canvas.height;
+              const dw = slot.w * canvas.width;
+              const dh = slot.h * canvas.height;
+
+              // Aspect fill logic for video
+              const vW = video.videoWidth;
+              const vH = video.videoHeight;
+              const srcRatio = vW / vH;
+              const dstRatio = dw / dh;
+              let sx = 0, sy = 0, sw = vW, sh = vH;
+
+              if (srcRatio > dstRatio) {
+                sw = vH * dstRatio;
+                sx = (vW - sw) / 2;
+              } else {
+                sh = vW / dstRatio;
+                sy = (vH - sh) / 2;
+              }
+              // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
+              ctx.drawImage(video, sx, sy, sw, sh, dx, dy, dw, dh);
+            }
+          });
+        } else {
+          // Standard vertical stack
+          const slotHeight = canvas.height / targetCount;
+          videos.forEach((video, index) => {
+            // Simple stretch or crop centered? Assuming simple stretch matches photo logic currently
+            // But better to center crop if possible, or just draw full
+            ctx.drawImage(video, 0, index * slotHeight, canvas.width, slotHeight);
+          });
+        }
+
+        // Removed filter for overlay if applied
+        // ctx.filter = 'none';
+
+        // Draw Overlay
+        if (overlayImage) {
+          ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
+        }
+
         if (performance.now() - startTime < targetDuration) {
-          animationFrame = requestAnimationFrame(drawFrame);
+          requestAnimationFrame(drawFrame);
         } else if (recorder.state === 'recording') {
           recorder.stop();
         }
       };
-      animationFrame = requestAnimationFrame(drawFrame);
+
+      requestAnimationFrame(drawFrame);
       const resultBlob = await recordingPromise;
-      cancelAnimationFrame(animationFrame);
+
       videos.forEach(video => {
         video.pause();
         URL.revokeObjectURL(video.src);
       });
       return resultBlob;
+
     } catch (error) {
       console.warn('Không thể ghép video recap', error);
-      return clips[0] ?? null;
+      return clips[0] ?? null; // Fallback to first raw clip
     }
-  }, [rawVideoClips]);
+  }, [rawVideoClips, requiredShots, selectedFrameId, selectedPhotoIndices]);
 
   const finishProcessing = useCallback(async () => {
     if (!sessionId || isUploading) return;
