@@ -1,299 +1,362 @@
 'use client';
 
-import React, {
-    createContext,
-    useContext,
-    useState,
-    useRef,
-    useCallback,
-    useMemo,
-    ReactNode,
-} from 'react';
-import { uploadSessionMedia } from '@/api/endpoints/sessions/sessions';
-import { UploadSessionMediaType } from '@/api/model';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { socket } from '@/lib/socket';
 
-const TOTAL_SHOTS = 3;
+const TOTAL_SHOTS = 6;
+const REQUIRED_SHOTS = 3;
 
-export type SessionPhase =
-    | 'IDLE'
-    | 'COUNTDOWN'
-    | 'CAPTURING'
-    | 'DELAY'
-    | 'PROCESSING'
-    | 'READY'
-    | 'COMPLETED';
+export type BoothStep = 'CONFIG' | 'CAPTURE' | 'SELECTION' | 'REVIEW' | 'COMPLETED';
 
 interface BoothContextType {
-    sessionId: string | null;
-    setSessionId: (id: string | null) => void;
-    sessionPhase: SessionPhase;
-    setSessionPhase: React.Dispatch<React.SetStateAction<SessionPhase>>;
-    currentShotIndex: number;
-    totalShots: number;
-    tempPhotos: (Blob | null)[];
-    tempVideoClips: (Blob | null)[];
-    finalImageBlob: Blob | null;
-    finalVideoBlob: Blob | null;
-    finalImageUrl: string | null;
-    finalVideoUrl: string | null;
-    localPreviewUrl: string | null;
-    localVideoPreviewUrl: string | null;
-    cloudDownloadUrl: string | null;
-    startSessionLoop: () => void;
-    registerShotResult: (photo: Blob, options?: { clip?: Blob | null }) => Promise<void>;
-    handleFinishSession: () => Promise<void>;
-    resetSession: () => void;
+  sessionId: string | null;
+  setSessionId: (id: string | null) => void;
+  timerDuration: number;
+  step: BoothStep;
+  totalShots: number;
+  requiredShots: number;
+  capturedCount: number;
+  rawPhotos: (Blob | null)[];
+  rawVideoClips: (Blob | null)[];
+  photoPreviews: (string | null)[];
+  selectedPhotoIndices: number[];
+  selectedFrameId: string;
+  selectedFilter: string;
+  captureRequestId: string | null;
+  isCapturePending: boolean;
+  isProcessing: boolean;
+  setTimer: (seconds: number) => void;
+  takeShot: () => void;
+  acknowledgeCapture: () => void;
+  registerCapturedPhoto: (blob: Blob, previewUrl: string, clip?: Blob | null) => void;
+  receiveRemotePhoto: (previewUrl: string, slot?: number) => void;
+  togglePhotoSelection: (index: number) => void;
+  confirmSelection: () => void;
+  setFrame: (frameId: string) => void;
+  setFilter: (filterId: string) => void;
+  setStep: (next: BoothStep) => void;
+  setProcessing: (value: boolean) => void;
+  resetSession: () => void;
 }
-
-const generateFrame = async (photos: Blob[]): Promise<Blob> => {
-    // Basic implementation: Vertical Stack
-    const bitmaps = await Promise.all(photos.map(p => createImageBitmap(p)));
-    const width = bitmaps[0]?.width || 1920;
-    const height = bitmaps.reduce((acc, b) => acc + b.height, 0);
-
-    const canvas = new OffscreenCanvas(width, height);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas context failed');
-
-    let y = 0;
-    for (const bmp of bitmaps) {
-        ctx.drawImage(bmp, 0, y);
-        y += bmp.height;
-    }
-
-    return canvas.convertToBlob({ type: 'image/jpeg', quality: 0.9 });
-};
-
-const generateVideo = async (clips: Blob[]): Promise<Blob> => {
-    // Full stitching requires ffmpeg.wasm or server-side. 
-    // For now, return the first clip or a placeholder empty blob to prevent crash.
-    // If multiple clips exist, we might just use the first one or create a dummy.
-    if (clips.length > 0) {
-        return clips[0];
-    }
-    return new Blob([], { type: 'video/webm' });
-};
-
-const revokeObjectUrl = (url: string | null) => {
-    if (url) {
-        URL.revokeObjectURL(url);
-    }
-};
 
 const BoothContext = createContext<BoothContextType | undefined>(undefined);
 
 export const BoothProvider = ({ children }: { children: ReactNode }) => {
-    const [sessionId, setSessionId] = useState<string | null>(null);
-    const [sessionPhase, setSessionPhase] = useState<SessionPhase>('IDLE');
-    const [currentShotIndex, setCurrentShotIndex] = useState(0);
-    const [tempPhotos, setTempPhotos] = useState<(Blob | null)[]>(Array(TOTAL_SHOTS).fill(null));
-    const [tempVideoClips, setTempVideoClips] = useState<(Blob | null)[]>(Array(TOTAL_SHOTS).fill(null));
-    const [finalImageBlob, setFinalImageBlob] = useState<Blob | null>(null);
-    const [finalVideoBlob, setFinalVideoBlob] = useState<Blob | null>(null);
-    const [finalImageUrl, setFinalImageUrl] = useState<string | null>(null);
-    const [finalVideoUrl, setFinalVideoUrl] = useState<string | null>(null);
-    const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
-    const [localVideoPreviewUrl, setLocalVideoPreviewUrl] = useState<string | null>(null);
-    const [cloudDownloadUrl, setCloudDownloadUrl] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [timerDuration, setTimerDuration] = useState(5);
+  const [step, setStep] = useState<BoothStep>('CONFIG');
+  const [rawPhotos, setRawPhotos] = useState<(Blob | null)[]>(Array(TOTAL_SHOTS).fill(null));
+  const [photoPreviews, setPhotoPreviews] = useState<(string | null)[]>(Array(TOTAL_SHOTS).fill(null));
+  const [selectedPhotoIndices, setSelectedPhotoIndices] = useState<number[]>([]);
+  const [capturedCount, setCapturedCount] = useState(0);
+  const [selectedFrameId, setSelectedFrameId] = useState('frame-1');
+  const [selectedFilter, setSelectedFilter] = useState('normal');
+  const [captureRequestId, setCaptureRequestId] = useState<string | null>(null);
+  const captureRequestIdRef = useRef<string | null>(null);
+  const [isCapturePending, setIsCapturePending] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [rawVideoClips, setRawVideoClips] = useState<(Blob | null)[]>(Array(TOTAL_SHOTS).fill(null));
 
-    const photosRef = useRef<(Blob | null)[]>(tempPhotos);
-    const clipsRef = useRef<(Blob | null)[]>(tempVideoClips);
+  const resetSession = useCallback(() => {
+    setSessionId(null);
+    setTimerDuration(5);
+    setStep('CONFIG');
+    setCapturedCount(0);
+    setSelectedPhotoIndices([]);
+    setRawPhotos(Array(TOTAL_SHOTS).fill(null));
+    setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
+    setSelectedFrameId('frame-1');
+    setSelectedFilter('normal');
+    setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
+    setCaptureRequestId(null);
+    setIsCapturePending(false);
+    setIsProcessing(false);
+  }, []);
 
-    const resetLoopState = useCallback(() => {
-        const emptyPhotos = Array(TOTAL_SHOTS).fill(null);
-        const emptyClips = Array(TOTAL_SHOTS).fill(null);
-        setCurrentShotIndex(0);
-        setTempPhotos(emptyPhotos);
-        photosRef.current = emptyPhotos;
-        setTempVideoClips(emptyClips);
-        clipsRef.current = emptyClips;
-        setFinalImageBlob(null);
-        setFinalVideoBlob(null);
-        setFinalImageUrl(null);
-        setFinalVideoUrl(null);
-        setCloudDownloadUrl(null);
-        setLocalPreviewUrl(prev => {
-            revokeObjectUrl(prev);
-            return null;
-        });
-        setLocalVideoPreviewUrl(prev => {
-            revokeObjectUrl(prev);
-            return null;
-        });
-    }, []);
+  const setTimer = useCallback((seconds: number) => {
+    setTimerDuration(seconds);
+    setStep('CAPTURE');
+    setCapturedCount(0);
+    setSelectedPhotoIndices([]);
+    setRawPhotos(Array(TOTAL_SHOTS).fill(null));
+    setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
+    setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
+    if (sessionId) {
+      socket.emit('update_config', { sessionId, timerDuration: seconds });
+    }
+  }, [sessionId]);
 
-    const startSessionLoop = useCallback(() => {
-        resetLoopState();
-        setSessionPhase('COUNTDOWN');
-    }, [resetLoopState]);
+  const takeShot = useCallback(() => {
+    if (!sessionId || isCapturePending || capturedCount >= TOTAL_SHOTS) return;
+    const requestId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    setIsCapturePending(true);
+    setCaptureRequestId(requestId);
+    socket.emit('update_config', { sessionId, captureRequestId: requestId });
+  }, [sessionId, isCapturePending, capturedCount]);
 
-    const processShots = useCallback(async () => {
-        setSessionPhase('PROCESSING');
-        try {
-            const photoInputs = photosRef.current.filter(Boolean) as Blob[];
-            const clipInputs = clipsRef.current.filter(Boolean) as Blob[];
+  const acknowledgeCapture = useCallback(() => {
+    setIsCapturePending(false);
+    setCaptureRequestId(null);
+    if (sessionId) {
+      socket.emit('update_config', { sessionId, captureRequestId: null });
+    }
+  }, [sessionId]);
 
-            const [mergedFrame, recapVideo] = await Promise.all([
-                generateFrame(photoInputs),
-                generateVideo(clipInputs),
-            ]);
+  const registerCapturedPhoto = useCallback((blob: Blob, previewUrl: string, clip?: Blob | null) => {
+    // FIX: Guard against double execution
+    if (!captureRequestIdRef.current) {
+      return;
+    }
+    const currentRequestId = captureRequestIdRef.current;
 
-            setFinalImageBlob(mergedFrame);
-            setFinalVideoBlob(recapVideo);
-            setSessionPhase('READY');
-        } catch (error) {
-            console.error('Failed to process captured media', error);
-            setSessionPhase('IDLE');
-            throw error;
-        }
-    }, []);
+    // Calculate assigned slot synchronously using current state
+    let assignedSlot = Math.min(capturedCount, TOTAL_SHOTS - 1);
 
-    const registerShotResult = useCallback(
-        async (photo: Blob, options?: { clip?: Blob | null }) => {
-            setTempPhotos(prev => {
-                const next = [...prev];
-                next[currentShotIndex] = photo;
-                photosRef.current = next;
-                return next;
-            });
+    // Check collision against current rawPhotos state
+    if (rawPhotos[assignedSlot] !== null) {
+      const fallback = rawPhotos.findIndex(item => item === null);
+      if (fallback !== -1) {
+        assignedSlot = fallback;
+      } else {
+        // Full
+        assignedSlot = -1;
+      }
+    }
 
-            if (options?.clip) {
-                setTempVideoClips(prev => {
-                    const next = [...prev];
-                    next[currentShotIndex] = options.clip ?? null;
-                    clipsRef.current = next;
-                    return next;
-                });
-            }
+    if (assignedSlot === -1) {
+      captureRequestIdRef.current = null; // Consume ID even if failed
+      acknowledgeCapture();
+      return;
+    }
 
-            const nextIndex = currentShotIndex + 1;
-            if (nextIndex >= TOTAL_SHOTS) {
-                setCurrentShotIndex(TOTAL_SHOTS);
-                await processShots();
-            } else {
-                setCurrentShotIndex(nextIndex);
-                setSessionPhase('DELAY');
-            }
-        },
-        [currentShotIndex, processShots]
-    );
+    // Now we have a firm assignedSlot. use it for EVERYTHING.
+    // Consume ID only on success path or handled failure
+    captureRequestIdRef.current = null;
 
-    const handleFinishSession = useCallback(async () => {
-        if (!sessionId || !finalImageBlob) {
-            throw new Error('Cannot finalize session without media outputs');
-        }
+    setRawPhotos(prev => {
+      const next = [...prev];
+      // Double check inside updater? No, we trust our sync calculation because 
+      // this function is the ONLY writer during capture sequence usually.
+      next[assignedSlot] = blob;
+      return next;
+    });
 
-        const shouldInitializePreview = !localPreviewUrl;
-        if (shouldInitializePreview) {
-            const previewUrl = URL.createObjectURL(finalImageBlob);
-            setLocalPreviewUrl(prev => {
-                revokeObjectUrl(prev);
-                return previewUrl;
-            });
+    setPhotoPreviews(prev => {
+      const next = [...prev];
+      next[assignedSlot] = previewUrl;
+      return next;
+    });
 
-            if (finalVideoBlob) {
-                const videoPreviewUrl = URL.createObjectURL(finalVideoBlob);
-                setLocalVideoPreviewUrl(prev => {
-                    revokeObjectUrl(prev);
-                    return videoPreviewUrl;
-                });
-            }
+    if (clip) {
+      setRawVideoClips(prev => {
+        const next = [...prev];
+        next[assignedSlot] = clip;
+        return next;
+      });
+    }
 
-            setSessionPhase('COMPLETED');
+    setCapturedCount(prev => {
+      const next = Math.min(prev + 1, TOTAL_SHOTS);
+      if (next === TOTAL_SHOTS) {
+        setStep('SELECTION');
+      }
+      return next;
+    });
 
-            socket.emit('show_result', {
-                roomId: sessionId,
-                previewReady: true,
-            });
-        }
-
-        const upload = (file: Blob, type: UploadSessionMediaType) =>
-            uploadSessionMedia(sessionId, { file }, { type }).then(res => res.data.url);
-
-        try {
-            const videoFile = finalVideoBlob
-                ? new File([finalVideoBlob], 'video.webm', { type: finalVideoBlob.type || 'video/webm' })
-                : null;
-
-            const [imageUrl, videoUrl] = await Promise.all([
-                upload(finalImageBlob, UploadSessionMediaType.PROCESSED),
-                videoFile ? upload(videoFile, UploadSessionMediaType.VIDEO) : Promise.resolve<string | undefined>(undefined),
-            ]);
-
-            setFinalImageUrl(imageUrl);
-            setCloudDownloadUrl(imageUrl);
-            setFinalVideoUrl(videoUrl ?? null);
-
-            if (imageUrl) {
-                socket.emit('show_result', {
-                    roomId: sessionId,
-                    imageUrl,
-                    videoUrl,
-                });
-            }
-        } catch (error) {
-            console.error('Failed to upload processed media', error);
-            throw error;
-        }
-    }, [sessionId, finalImageBlob, finalVideoBlob, localPreviewUrl]);
-
-    const resetSession = useCallback(() => {
-        setSessionId(null);
-        resetLoopState();
-        setSessionPhase('IDLE');
-    }, [resetLoopState]);
-
-    const value = useMemo<BoothContextType>(() => ({
+    acknowledgeCapture();
+    if (sessionId) {
+      socket.emit('photo_taken', {
         sessionId,
-        setSessionId,
-        sessionPhase,
-        setSessionPhase,
-        currentShotIndex,
-        totalShots: TOTAL_SHOTS,
-        tempPhotos,
-        tempVideoClips,
-        finalImageBlob,
-        finalVideoBlob,
-        finalImageUrl,
-        finalVideoUrl,
-        localPreviewUrl,
-        localVideoPreviewUrl,
-        cloudDownloadUrl,
-        startSessionLoop,
-        registerShotResult,
-        handleFinishSession,
-        resetSession,
-    }), [
-        sessionId,
-        sessionPhase,
-        currentShotIndex,
-        tempPhotos,
-        tempVideoClips,
-        finalImageBlob,
-        finalVideoBlob,
-        finalImageUrl,
-        finalVideoUrl,
-        localPreviewUrl,
-        localVideoPreviewUrl,
-        cloudDownloadUrl,
-        startSessionLoop,
-        registerShotResult,
-        handleFinishSession,
-        resetSession,
-    ]);
+        image: previewUrl,
+        slot: assignedSlot,
+        requestId: currentRequestId,
+      });
+    }
+  }, [acknowledgeCapture, sessionId, capturedCount, rawPhotos]);
 
-    return (
-        <BoothContext.Provider value={value}>
-            {children}
-        </BoothContext.Provider>
-    );
+  const receiveRemotePhoto = useCallback((previewUrl: string, slot?: number) => {
+    let targetSlot = typeof slot === 'number' && slot >= 0 && slot < TOTAL_SHOTS ? slot : -1;
+
+    // If no specific slot, find the first empty one from current state
+    if (targetSlot === -1) {
+      targetSlot = photoPreviews.findIndex(p => p === null);
+    }
+
+    if (targetSlot === -1) {
+      // Still no slot? We are full or error.
+      return;
+    }
+
+    setPhotoPreviews(prev => {
+      const next = [...prev];
+      next[targetSlot] = previewUrl;
+      return next;
+    });
+
+    setCapturedCount(prev => {
+      const next = Math.min(prev + 1, TOTAL_SHOTS);
+      if (next === TOTAL_SHOTS) {
+        setStep('SELECTION');
+      }
+      return next;
+    });
+
+    setIsCapturePending(false);
+  }, [photoPreviews]);
+
+  const togglePhotoSelection = useCallback((index: number) => {
+    setSelectedPhotoIndices(prev => {
+      const exists = prev.includes(index);
+      let updated: number[];
+      if (exists) {
+        updated = prev.filter(i => i !== index);
+      } else {
+        if (prev.length >= REQUIRED_SHOTS) {
+          return prev;
+        }
+        updated = [...prev, index].sort((a, b) => a - b);
+      }
+      if (sessionId) {
+        socket.emit('update_config', { sessionId, selectedPhotoIndices: updated });
+      }
+      return updated;
+    });
+  }, [sessionId]);
+
+  const confirmSelection = useCallback(() => {
+    if (selectedPhotoIndices.length !== REQUIRED_SHOTS) return;
+    setStep('REVIEW');
+    if (sessionId) {
+      socket.emit('update_config', { sessionId, selectedPhotoIndices });
+    }
+  }, [selectedPhotoIndices, sessionId]);
+
+  const setFrame = useCallback((frameId: string) => {
+    setSelectedFrameId(frameId);
+    if (sessionId) {
+      socket.emit('update_config', { sessionId, selectedFrameId: frameId });
+    }
+  }, [sessionId]);
+
+  const setFilter = useCallback((filterId: string) => {
+    setSelectedFilter(filterId);
+    if (sessionId) {
+      socket.emit('update_config', { sessionId, selectedFilter: filterId });
+    }
+  }, [sessionId]);
+
+  useEffect(() => {
+    const handleUpdate = (payload: {
+      selectedFrameId?: string;
+      selectedFilter?: string;
+      timerDuration?: number;
+      selectedPhotoIndices?: number[];
+      captureRequestId?: string | null;
+    }) => {
+      if (payload.selectedFrameId !== undefined) {
+        setSelectedFrameId(payload.selectedFrameId);
+      }
+      if (payload.selectedFilter !== undefined) {
+        setSelectedFilter(payload.selectedFilter);
+      }
+      if (typeof payload.timerDuration === 'number') {
+        setTimerDuration(payload.timerDuration);
+        setCapturedCount(0);
+        setRawPhotos(Array(TOTAL_SHOTS).fill(null));
+        setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
+        setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
+        setSelectedPhotoIndices([]);
+        setStep('CAPTURE');
+      }
+      if (payload.selectedPhotoIndices !== undefined) {
+        setSelectedPhotoIndices(payload.selectedPhotoIndices);
+        if (payload.selectedPhotoIndices.length === REQUIRED_SHOTS) {
+          setStep('REVIEW');
+        }
+      }
+      if ('captureRequestId' in payload) {
+        const nextRequestId = payload.captureRequestId ?? null;
+        setCaptureRequestId(nextRequestId);
+        setIsCapturePending(Boolean(nextRequestId));
+      }
+    };
+
+    socket.on('update_config', handleUpdate);
+    return () => {
+      socket.off('update_config', handleUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    captureRequestIdRef.current = captureRequestId;
+  }, [captureRequestId]);
+
+  const value = useMemo<BoothContextType>(() => ({
+    sessionId,
+    setSessionId,
+    timerDuration,
+    step,
+    totalShots: TOTAL_SHOTS,
+    requiredShots: REQUIRED_SHOTS,
+    capturedCount,
+    rawPhotos,
+    rawVideoClips,
+    photoPreviews,
+    selectedPhotoIndices,
+    selectedFrameId,
+    selectedFilter,
+    captureRequestId,
+    isCapturePending,
+    isProcessing,
+    setTimer,
+    takeShot,
+    registerCapturedPhoto,
+    receiveRemotePhoto,
+    togglePhotoSelection,
+    confirmSelection,
+    acknowledgeCapture,
+    setFrame,
+    setFilter,
+    setStep,
+    setProcessing: setIsProcessing,
+    resetSession,
+  }), [
+    sessionId,
+    timerDuration,
+    step,
+    capturedCount,
+    rawPhotos,
+    rawVideoClips,
+    photoPreviews,
+    selectedPhotoIndices,
+    selectedFrameId,
+    selectedFilter,
+    captureRequestId,
+    isCapturePending,
+    isProcessing,
+    setTimer,
+    takeShot,
+    registerCapturedPhoto,
+    receiveRemotePhoto,
+    togglePhotoSelection,
+    confirmSelection,
+    acknowledgeCapture,
+    setFrame,
+    setFilter,
+    resetSession,
+  ]);
+
+  return (
+    <BoothContext.Provider value={value}>
+      {children}
+    </BoothContext.Provider>
+  );
 };
 
 export const useBooth = () => {
-    const context = useContext(BoothContext);
-    if (!context) {
-        throw new Error('useBooth must be used within a BoothProvider');
-    }
-    return context;
+  const context = useContext(BoothContext);
+  if (!context) {
+    throw new Error('useBooth must be used within a BoothProvider');
+  }
+  return context;
 };

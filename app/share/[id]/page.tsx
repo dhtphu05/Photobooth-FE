@@ -19,6 +19,14 @@ const filterClasses: Record<Filter, string> = {
 
 const DEFAULT_FRAME_URL = 'https://cdn.freehihi.com/68fdab4e38d77.png';
 
+const API_BASE_URL = 'https://api-photobooth.lcdkhoacntt-dut.live';
+
+const getMediaUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 export default function SharePage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
     const id = resolvedParams.id;
@@ -44,7 +52,8 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
 
     const downloadMedia = useCallback(async (url: string, fallbackName: string) => {
         try {
-            const response = await fetch(url, {
+            const fullUrl = getMediaUrl(url);
+            const response = await fetch(fullUrl, {
                 mode: 'cors',
                 credentials: 'omit',
                 cache: 'no-cache',
@@ -59,7 +68,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
 
             let filename = fallbackName;
             try {
-                const parsedUrl = new URL(url);
+                const parsedUrl = new URL(fullUrl);
                 const candidate = parsedUrl.pathname.split('/').filter(Boolean).pop();
                 if (candidate) {
                     filename = candidate.includes('.') ? candidate : fallbackName;
@@ -80,7 +89,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
         } catch (error) {
             console.error('Unable to download media', error);
             const fallbackAnchor = document.createElement('a');
-            fallbackAnchor.href = url;
+            fallbackAnchor.href = getMediaUrl(url);
             fallbackAnchor.target = '_blank';
             fallbackAnchor.rel = 'noopener noreferrer';
             document.body.appendChild(fallbackAnchor);
@@ -154,12 +163,12 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
         }
     }, [downloadMedia, id, processedStrip]);
 
-    const stackedPhotoStrip = useMemo<(typeof photos)[number] | null[]>(() => {
+    const stackedPhotoStrip = useMemo<((typeof photos)[number] | null)[]>(() => {
         if (processedStrip || photos.length === 0) {
             return [];
         }
 
-        const strip: (typeof photos)[number] | null[] = [...photos.slice(0, 4)];
+        const strip: ((typeof photos)[number] | null)[] = [...photos.slice(0, 4)];
         let duplicationIndex = 0;
         while (strip.length < 4 && photos.length > 0) {
             strip.push(photos[duplicationIndex % photos.length] ?? null);
@@ -246,7 +255,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                                 {processedStrip ? (
                                     <div className="relative w-full max-w-[320px] mx-auto overflow-hidden rounded-xl bg-white">
                                         <img
-                                            src={processedStrip.url}
+                                            src={getMediaUrl(processedStrip.url)}
                                             crossOrigin="anonymous"
                                             alt="Processed strip"
                                             className="w-full h-auto object-cover"
@@ -259,7 +268,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                                                 <div key={photo?.id ?? index} className="w-full aspect-[4/3]">
                                                     {photo ? (
                                                         <img
-                                                            src={photo.url}
+                                                            src={getMediaUrl(photo.url)}
                                                             alt={`Session Photo ${index + 1}`}
                                                             className="w-full h-full object-cover"
                                                             crossOrigin="anonymous"
@@ -322,7 +331,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                                                 ref={(element) => {
                                                     videoRefs.current[index] = element;
                                                 }}
-                                                src={slot.media.url}
+                                                src={getMediaUrl(slot.media.url)}
                                                 autoPlay
                                                 muted
                                                 playsInline
@@ -366,7 +375,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                             <div className="space-y-2">
                                 <h3 className="font-medium text-sm text-muted-foreground">Ảnh Đã Ghép</h3>
                                 <div className="rounded-lg overflow-hidden border bg-white">
-                                    <img src={processedStrip.url} alt="Processed strip" className="w-full h-auto" crossOrigin="anonymous" />
+                                    <img src={getMediaUrl(processedStrip.url)} alt="Processed strip" className="w-full h-auto" crossOrigin="anonymous" />
                                 </div>
                                 <Button
                                     className="w-full"
@@ -382,7 +391,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                             <div key={photo.id} className="space-y-2">
                                 <h3 className="font-medium text-sm text-muted-foreground">Ảnh Gốc</h3>
                                 <div className="rounded-lg overflow-hidden border bg-white">
-                                    <img src={photo.url} alt="Session Photo" className="w-full h-auto" />
+                                    <img src={getMediaUrl(photo.url)} alt="Session Photo" className="w-full h-auto" />
                                 </div>
                                 <Button
                                     className="w-full"
@@ -398,7 +407,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                             <div key={video.id} className="space-y-2">
                                 <h3 className="font-medium text-sm text-muted-foreground">Video Clip</h3>
                                 <div className="rounded-lg overflow-hidden border bg-black aspect-video flex items-center justify-center">
-                                    <video src={video.url} controls className="w-full h-full" />
+                                    <video src={getMediaUrl(video.url)} controls className="w-full h-full" />
                                 </div>
                                 <Button
                                     className="w-full"

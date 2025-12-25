@@ -1,28 +1,27 @@
-type CaptureDonePayload = {
-    roomId: string;
-    imageUrl?: string;
-    videoUrl?: string;
-    shotIndex?: number;
+type UpdateConfigPayload = {
+    sessionId: string;
+    selectedFrameId?: string;
+    selectedFilter?: string;
+    timerDuration?: number;
+    selectedPhotoIndices?: number[];
+    captureRequestId?: string | null;
 };
 
-type ShowResultPayload = {
-    roomId?: string;
-    imageUrl?: string;
-    videoUrl?: string;
-    previewReady?: boolean;
-};
+type ServerConfigBroadcast = Omit<UpdateConfigPayload, 'sessionId'>;
 
 export interface ClientToServerEvents {
-    join: (roomId: string) => void;
-    update_state: (payload: { selectedFilter?: string; selectedFrame?: string }) => void;
-    trigger_countdown: (roomId: string) => void;
-    capture_done: (payload: CaptureDonePayload) => void;
-    show_result: (payload: ShowResultPayload) => void;
+    join: (sessionId: string) => void;
+    update_config: (payload: UpdateConfigPayload) => void;
+    trigger_finish: (sessionId: string) => void;
+    photo_taken: (payload: { sessionId: string; image: string; slot?: number; requestId?: string | null }) => void;
+    processing_start: (sessionId: string) => void;
+    processing_done: (sessionId: string) => void;
 }
 
 export interface ServerToClientEvents {
-    state_updated: (payload: { selectedFilter?: string; selectedFrame?: string }) => void;
-    start_countdown: () => void;
-    show_result: (payload: ShowResultPayload) => void;
-    capture_done: (payload: CaptureDonePayload) => void;
+    update_config: (payload: ServerConfigBroadcast) => void;
+    trigger_finish: () => void;
+    photo_taken: (payload: { image: string; slot?: number; requestId?: string | null }) => void;
+    processing_start: () => void;
+    processing_done: () => void;
 }
