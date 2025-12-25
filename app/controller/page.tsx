@@ -80,8 +80,11 @@ const ControllerContent = () => {
             }
         };
 
-        const handleShowResult = (payload: { roomId?: string; imageUrl?: string; videoUrl?: string }) => {
+        const handleShowResult = (payload: { roomId?: string; imageUrl?: string; videoUrl?: string; previewReady?: boolean }) => {
             if (payload.roomId && payload.roomId !== sessionId) return;
+            if (payload.previewReady) {
+                setControllerPhase('COMPLETED');
+            }
             if (payload.imageUrl) {
                 setResultUrls({ imageUrl: payload.imageUrl, videoUrl: payload.videoUrl });
                 setControllerPhase('COMPLETED');
@@ -132,7 +135,9 @@ const ControllerContent = () => {
             case 'PROCESSING':
                 return 'Processing & uploading...';
             case 'COMPLETED':
-                return 'Session completed!';
+                return resultUrls?.imageUrl
+                    ? 'Session completed! QR ready to share.'
+                    : 'Success! Uploading to the cloud in background...';
             default:
                 return 'Ready to start the session';
         }
@@ -206,6 +211,10 @@ const ControllerContent = () => {
                                     <Button variant="outline" asChild>
                                         <a href={resultUrls.imageUrl} target="_blank" rel="noreferrer">View Final Strip</a>
                                     </Button>
+                                )}
+
+                                {controllerPhase === 'COMPLETED' && !resultUrls?.imageUrl && (
+                                    <p className="text-xs text-muted-foreground">Uploads still running... QR will appear soon.</p>
                                 )}
                             </div>
 

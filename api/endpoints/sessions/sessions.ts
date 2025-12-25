@@ -318,7 +318,7 @@ export const useCompleteSession = <TError = AxiosError<unknown>,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * @summary Upload a media file for the session
+ * @summary Upload a media file (WebM automatically converted to MP4)
  */
 export const uploadSessionMedia = (
     id: string,
@@ -371,7 +371,7 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
     export type UploadSessionMediaMutationError = AxiosError<unknown>
 
     /**
- * @summary Upload a media file for the session
+ * @summary Upload a media file (WebM automatically converted to MP4)
  */
 export const useUploadSessionMedia = <TError = AxiosError<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadSessionMedia>>, TError,{id: string;data: UploadSessionMediaBody;params?: UploadSessionMediaParams}, TContext>, axios?: AxiosRequestConfig}

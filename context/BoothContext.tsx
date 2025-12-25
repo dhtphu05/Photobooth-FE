@@ -13,7 +13,7 @@ import { uploadSessionMedia } from '@/api/endpoints/sessions/sessions';
 import { UploadSessionMediaType } from '@/api/model';
 import { socket } from '@/lib/socket';
 
-const TOTAL_SHOTS = 4;
+const TOTAL_SHOTS = 3;
 
 export type SessionPhase =
     | 'IDLE'
@@ -22,7 +22,6 @@ export type SessionPhase =
     | 'DELAY'
     | 'PROCESSING'
     | 'READY'
-    | 'UPLOADING'
     | 'COMPLETED';
 
 interface BoothContextType {
@@ -38,6 +37,9 @@ interface BoothContextType {
     finalVideoBlob: Blob | null;
     finalImageUrl: string | null;
     finalVideoUrl: string | null;
+    localPreviewUrl: string | null;
+    localVideoPreviewUrl: string | null;
+    cloudDownloadUrl: string | null;
     startSessionLoop: () => void;
     registerShotResult: (photo: Blob, options?: { clip?: Blob | null }) => Promise<void>;
     handleFinishSession: () => Promise<void>;
@@ -73,6 +75,12 @@ const generateVideo = async (clips: Blob[]): Promise<Blob> => {
     return new Blob([], { type: 'video/webm' });
 };
 
+const revokeObjectUrl = (url: string | null) => {
+    if (url) {
+        URL.revokeObjectURL(url);
+    }
+};
+
 const BoothContext = createContext<BoothContextType | undefined>(undefined);
 
 export const BoothProvider = ({ children }: { children: ReactNode }) => {
@@ -85,6 +93,9 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     const [finalVideoBlob, setFinalVideoBlob] = useState<Blob | null>(null);
     const [finalImageUrl, setFinalImageUrl] = useState<string | null>(null);
     const [finalVideoUrl, setFinalVideoUrl] = useState<string | null>(null);
+    const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+    const [localVideoPreviewUrl, setLocalVideoPreviewUrl] = useState<string | null>(null);
+    const [cloudDownloadUrl, setCloudDownloadUrl] = useState<string | null>(null);
 
     const photosRef = useRef<(Blob | null)[]>(tempPhotos);
     const clipsRef = useRef<(Blob | null)[]>(tempVideoClips);
@@ -101,6 +112,15 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
         setFinalVideoBlob(null);
         setFinalImageUrl(null);
         setFinalVideoUrl(null);
+        setCloudDownloadUrl(null);
+        setLocalPreviewUrl(prev => {
+            revokeObjectUrl(prev);
+            return null;
+        });
+        setLocalVideoPreviewUrl(prev => {
+            revokeObjectUrl(prev);
+            return null;
+        });
     }, []);
 
     const startSessionLoop = useCallback(() => {
@@ -160,37 +180,63 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     );
 
     const handleFinishSession = useCallback(async () => {
-        if (!sessionId || !finalImageBlob || !finalVideoBlob) {
-            throw new Error('Cannot upload session without media outputs');
+        if (!sessionId || !finalImageBlob) {
+            throw new Error('Cannot finalize session without media outputs');
         }
 
-        setSessionPhase('UPLOADING');
+        const shouldInitializePreview = !localPreviewUrl;
+        if (shouldInitializePreview) {
+            const previewUrl = URL.createObjectURL(finalImageBlob);
+            setLocalPreviewUrl(prev => {
+                revokeObjectUrl(prev);
+                return previewUrl;
+            });
+
+            if (finalVideoBlob) {
+                const videoPreviewUrl = URL.createObjectURL(finalVideoBlob);
+                setLocalVideoPreviewUrl(prev => {
+                    revokeObjectUrl(prev);
+                    return videoPreviewUrl;
+                });
+            }
+
+            setSessionPhase('COMPLETED');
+
+            socket.emit('show_result', {
+                roomId: sessionId,
+                previewReady: true,
+            });
+        }
 
         const upload = (file: Blob, type: UploadSessionMediaType) =>
             uploadSessionMedia(sessionId, { file }, { type }).then(res => res.data.url);
 
         try {
+            const videoFile = finalVideoBlob
+                ? new File([finalVideoBlob], 'video.webm', { type: finalVideoBlob.type || 'video/webm' })
+                : null;
+
             const [imageUrl, videoUrl] = await Promise.all([
                 upload(finalImageBlob, UploadSessionMediaType.PROCESSED),
-                upload(finalVideoBlob, UploadSessionMediaType.VIDEO),
+                videoFile ? upload(videoFile, UploadSessionMediaType.VIDEO) : Promise.resolve<string | undefined>(undefined),
             ]);
 
             setFinalImageUrl(imageUrl);
-            setFinalVideoUrl(videoUrl);
+            setCloudDownloadUrl(imageUrl);
+            setFinalVideoUrl(videoUrl ?? null);
 
-            socket.emit('show_result', {
-                roomId: sessionId,
-                imageUrl,
-                videoUrl,
-            });
-
-            setSessionPhase('COMPLETED');
+            if (imageUrl) {
+                socket.emit('show_result', {
+                    roomId: sessionId,
+                    imageUrl,
+                    videoUrl,
+                });
+            }
         } catch (error) {
             console.error('Failed to upload processed media', error);
-            setSessionPhase('READY');
             throw error;
         }
-    }, [sessionId, finalImageBlob, finalVideoBlob]);
+    }, [sessionId, finalImageBlob, finalVideoBlob, localPreviewUrl]);
 
     const resetSession = useCallback(() => {
         setSessionId(null);
@@ -211,6 +257,9 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
         finalVideoBlob,
         finalImageUrl,
         finalVideoUrl,
+        localPreviewUrl,
+        localVideoPreviewUrl,
+        cloudDownloadUrl,
         startSessionLoop,
         registerShotResult,
         handleFinishSession,
@@ -225,6 +274,9 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
         finalVideoBlob,
         finalImageUrl,
         finalVideoUrl,
+        localPreviewUrl,
+        localVideoPreviewUrl,
+        cloudDownloadUrl,
         startSessionLoop,
         registerShotResult,
         handleFinishSession,

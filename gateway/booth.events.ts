@@ -7,8 +7,9 @@ type CaptureDonePayload = {
 
 type ShowResultPayload = {
     roomId?: string;
-    imageUrl: string;
+    imageUrl?: string;
     videoUrl?: string;
+    previewReady?: boolean;
 };
 
 export interface ClientToServerEvents {

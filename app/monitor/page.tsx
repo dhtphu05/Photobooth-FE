@@ -23,7 +23,8 @@ const MonitorContent = () => {
         startSessionLoop,
         registerShotResult,
         handleFinishSession,
-        finalImageUrl,
+        localPreviewUrl,
+        cloudDownloadUrl,
     } = useBooth();
 
     const sessionIdRef = useRef<string | null>(null);
@@ -31,10 +32,10 @@ const MonitorContent = () => {
     const [state, setState] = useState({ filter: 'original', frame: 'none' });
     const [countdown, setCountdown] = useState<number | null>(null);
     const [flash, setFlash] = useState(false);
-    const [origin, setOrigin] = useState('');
     const [nextShotMessage, setNextShotMessage] = useState<string | null>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [previews, setPreviews] = useState<(string | null)[]>(Array(totalShots).fill(null));
+    const [origin, setOrigin] = useState('');
 
     const webcamRef = useRef<Webcam>(null);
     const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -281,20 +282,24 @@ const MonitorContent = () => {
     }
 
     const shotsCompleted = Math.min(currentShotIndex, totalShots);
-    const shareUrl = origin && sessionId ? `${origin}/share/${sessionId}` : '';
+    const shareUrl = sessionId && origin ? `${origin}/share/${sessionId}` : undefined;
+    const qrUrl = cloudDownloadUrl && shareUrl ? shareUrl : undefined;
 
-    if (sessionPhase === 'COMPLETED' && finalImageUrl) {
+    if (sessionPhase === 'COMPLETED' && localPreviewUrl) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-black text-white">
                 <div className="flex w-full h-full p-8 gap-8 items-center justify-center bg-black">
                     <div className="flex-1 h-full flex justify-center relative">
-                        <img src={finalImageUrl} alt="Final Result" className="h-full object-contain rounded-xl shadow-2xl" />
+                        <img src={localPreviewUrl} alt="Final Result" className="h-full object-contain rounded-xl shadow-2xl" />
                         <div className="absolute inset-0 pointer-events-none" style={{ border: getFrameBorder() }} />
                     </div>
                     <div className="w-[400px] flex flex-col items-center justify-center bg-white/10 p-8 rounded-2xl backdrop-blur-md">
-                        {shareUrl && (
-                            <QRCodeResult url={shareUrl} />
-                        )}
+                        <QRCodeResult
+                            url={qrUrl}
+                            isLoading={!cloudDownloadUrl && !uploadError}
+                            errorMessage={uploadError}
+                            onRetry={uploadError ? retryUpload : undefined}
+                        />
                     </div>
                 </div>
             </div>
@@ -362,18 +367,10 @@ const MonitorContent = () => {
                     </div>
                 )}
 
-                {(sessionPhase === 'PROCESSING' || sessionPhase === 'UPLOADING') && (
+                {sessionPhase === 'PROCESSING' && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-30 bg-black/70">
                         <Loader2 className="w-16 h-16 text-white animate-spin mb-4" />
-                        <p className="text-white text-2xl font-semibold">
-                            {sessionPhase === 'PROCESSING' ? 'Generating your strip...' : 'Uploading...'}
-                        </p>
-                        {uploadError && (
-                            <div className="mt-4 flex flex-col items-center gap-2">
-                                <p className="text-red-300">{uploadError}</p>
-                                <Button onClick={retryUpload}>Retry Upload</Button>
-                            </div>
-                        )}
+                        <p className="text-white text-2xl font-semibold">Generating your strip...</p>
                     </div>
                 )}
             </div>
