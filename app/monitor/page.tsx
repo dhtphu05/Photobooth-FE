@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Webcam from 'react-webcam';
 
@@ -492,16 +492,16 @@ const MonitorContent = () => {
       <div className="flex justify-between items-center w-full max-w-7xl mx-auto z-10">
         <div>
           <p className="text-xs text-black/60 uppercase tracking-widest">Session</p>
-          <p className="font-mono text-xl font-bold">{sessionId || '—'}</p>
+          <p className="font-mono text-lg font-bold">{sessionId || '—'}</p>
         </div>
         {statusMessage && (
-          <div className="px-8 py-3 rounded-full bg-black/5 border border-black/10 text-xl font-medium animate-pulse text-black">
+          <div className="px-6 py-2 rounded-full bg-black/5 border border-black/10 text-lg font-medium animate-pulse text-black">
             {statusMessage}
           </div>
         )}
         <div className="text-right">
           <p className="text-xs text-black/60 uppercase tracking-widest">Shots</p>
-          <p className="font-mono text-xl font-bold">{capturedCount} / {totalShots}</p>
+          <p className="font-mono text-lg font-bold">{capturedCount} / {totalShots}</p>
         </div>
       </div>
 
@@ -601,8 +601,8 @@ const MonitorContent = () => {
             />
             {/* Countdown Overlay - Huge Center Text */}
             {countdown && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-md z-20">
-                <span className="text-black text-[20rem] font-black animate-pulse font-mono leading-none drop-shadow-2xl">{countdown}</span>
+              <div className="absolute inset-0 flex items-center justify-center z-20">
+                <span className="text-white text-[20rem] font-black animate-pulse font-mono leading-none drop-shadow-2xl">{countdown}</span>
               </div>
             )}
           </div>
@@ -665,7 +665,9 @@ const MonitorContent = () => {
 export default function MonitorPage() {
   return (
     <BoothProvider>
-      <MonitorContent />
+      <Suspense fallback={<div className="min-h-screen bg-white" />}>
+        <MonitorContent />
+      </Suspense>
     </BoothProvider>
   );
 }
