@@ -14,6 +14,7 @@ const FRAME_OPTIONS = [
   { id: 'frame-1', label: 'Classic' },
   { id: 'frame-2', label: 'Minimal' },
   { id: 'frame-3', label: 'Pop' },
+  { id: 'frame-bao', label: 'Báo' },
 ];
 const FILTER_OPTIONS = [
   { id: 'normal', label: 'Original' },

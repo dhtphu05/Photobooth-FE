@@ -14,6 +14,7 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-1': 'https://cdn.freehihi.com/68fdab4e38d77.png',
   'frame-2': null,
   'frame-3': null,
+  'frame-bao': '/frame-bao.png',
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -208,25 +209,80 @@ const MonitorContent = () => {
     const selectedBlobs = selectedPhotoIndices
       .map(index => rawPhotos[index])
       .filter((blob): blob is Blob => Boolean(blob));
-    if (selectedBlobs.length !== requiredShots) {
+
+    // For frame-bao, we handle exactly 3 photos specifically.
+    // For others, we rely on requiredShots (usually 3 or 4).
+    if (selectedFrameId !== 'frame-bao' && selectedBlobs.length !== requiredShots) {
       throw new Error('Thiếu ảnh được chọn');
     }
+    // If frame-bao but not 3 photos? The UI enforces selection limit, so we assume 3.
+
     const bitmaps = await Promise.all(selectedBlobs.map(blob => createImageBitmap(blob)));
     const canvas = document.createElement('canvas');
-    canvas.width = 1080;
-    canvas.height = 1920;
+
+    // Set dimensions based on frame type
+    if (selectedFrameId === 'frame-bao') {
+      canvas.width = 2480;
+      canvas.height = 3508;
+    } else {
+      canvas.width = 1080;
+      canvas.height = 1920;
+    }
+
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       bitmaps.forEach(bitmap => bitmap.close());
       throw new Error('Canvas không khả dụng');
     }
+
+    // Fill white background first
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     ctx.filter = CANVAS_FILTER_MAP[selectedFilter] ?? 'none';
-    const slotHeight = canvas.height / requiredShots;
-    bitmaps.forEach((bitmap, index) => {
-      ctx.drawImage(bitmap, 0, index * slotHeight, canvas.width, slotHeight);
-      bitmap.close();
-    });
+
+    if (selectedFrameId === 'frame-bao') {
+      const slots = [
+        { x: 0.038, y: 0.195, w: 0.924, h: 0.365 }, // Slot Top
+        { x: 0.038, y: 0.585, w: 0.445, h: 0.175 }, // Slot Mid Left
+        { x: 0.515, y: 0.770, w: 0.445, h: 0.175 }, // Slot Bot Right
+      ];
+
+      slots.forEach((slot, index) => {
+        if (index < bitmaps.length) {
+          const bitmap = bitmaps[index];
+          const dx = slot.x * canvas.width;
+          const dy = slot.y * canvas.height;
+          const dw = slot.w * canvas.width;
+          const dh = slot.h * canvas.height;
+
+          // Crop to fill logic
+          const srcRatio = bitmap.width / bitmap.height;
+          const dstRatio = dw / dh;
+          let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
+
+          if (srcRatio > dstRatio) {
+            sw = bitmap.height * dstRatio;
+            sx = (bitmap.width - sw) / 2;
+          } else {
+            sh = bitmap.width / dstRatio;
+            sy = (bitmap.height - sh) / 2;
+          }
+          ctx.drawImage(bitmap, sx, sy, sw, sh, dx, dy, dw, dh);
+        }
+      });
+    } else {
+      const slotHeight = canvas.height / requiredShots;
+      bitmaps.forEach((bitmap, index) => {
+        ctx.drawImage(bitmap, 0, index * slotHeight, canvas.width, slotHeight);
+      });
+    }
+
+    // Cleanup
+    bitmaps.forEach(bitmap => bitmap.close());
     ctx.filter = 'none';
+
+    // Draw Overlay
     const overlayUrl = FRAME_ASSETS[selectedFrameId] ?? null;
     if (overlayUrl) {
       try {
@@ -238,6 +294,7 @@ const MonitorContent = () => {
         console.warn('Không thể tải frame overlay', error);
       }
     }
+
     const stripBlob = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(blob => {
         if (blob) {
@@ -470,9 +527,8 @@ const MonitorContent = () => {
                 return (
                   <div
                     key={index}
-                    className={`relative aspect-[3/4] rounded-lg border ${
-                      selected ? 'border-green-400' : 'border-white/10'
-                    } overflow-hidden bg-white/5 flex items-center justify-center`}
+                    className={`relative aspect-[3/4] rounded-lg border ${selected ? 'border-green-400' : 'border-white/10'
+                      } overflow-hidden bg-white/5 flex items-center justify-center`}
                   >
                     {preview ? (
                       <img src={preview} className="object-cover w-full h-full" alt={`shot-${index}`} />
@@ -487,28 +543,65 @@ const MonitorContent = () => {
           {showPreviewStrip && (
             <div>
               <p className="text-sm text-white/60 mb-2">Preview</p>
-              <div className="relative w-[320px] mx-auto overflow-hidden rounded-xl bg-white">
-                <div className={`flex flex-col ${filterClass}`}>
-                  {[0, 1, 2].map(index => (
-                    <div key={index} className="w-full aspect-[3/4]">
-                      {selectedPreviewImages[index] ? (
-                        <img
-                          src={selectedPreviewImages[index]!}
-                          alt={`preview-${index}`}
-                          className="object-cover w-full h-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
-                          Waiting...
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+              <div
+                className="relative w-[320px] mx-auto overflow-hidden rounded-xl bg-white"
+                style={selectedFrameId === 'frame-bao' ? { aspectRatio: '2480/3508' } : undefined}
+              >
+                {selectedFrameId === 'frame-bao' ? (
+                  <div className={`relative w-full h-full ${filterClass}`}>
+                    {/* Render specific slots for frame-bao */}
+                    {[
+                      { top: '19.5%', left: '3.8%', width: '92.4%', height: '36.5%' },
+                      { top: '58.5%', left: '3.8%', width: '44.5%', height: '17.5%' },
+                      { top: '77.0%', left: '51.5%', width: '44.5%', height: '17.5%' },
+                    ].map((slot, index) => (
+                      <div
+                        key={index}
+                        className="absolute overflow-hidden custom-slot"
+                        style={{
+                          top: slot.top,
+                          left: slot.left,
+                          width: slot.width,
+                          height: slot.height,
+                        }}
+                      >
+                        {selectedPreviewImages[index] ? (
+                          <img
+                            src={selectedPreviewImages[index]!}
+                            alt={`preview-${index}`}
+                            className="object-cover w-full h-full"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
+                            Waiting...
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={`flex flex-col ${filterClass}`}>
+                    {[0, 1, 2].map(index => (
+                      <div key={index} className="w-full aspect-[3/4]">
+                        {selectedPreviewImages[index] ? (
+                          <img
+                            src={selectedPreviewImages[index]!}
+                            alt={`preview-${index}`}
+                            className="object-cover w-full h-full"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+                            Waiting...
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {FRAME_ASSETS[selectedFrameId] && (
                   <img
                     src={FRAME_ASSETS[selectedFrameId] ?? undefined}
-                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    className="absolute inset-0 w-full h-full pointer-events-none z-10"
                     alt="frame overlay"
                   />
                 )}
@@ -519,7 +612,7 @@ const MonitorContent = () => {
             <div className="mt-2">
               <p className="text-sm text-white/60 mb-2">Final Strip</p>
               <div className="w-[200px] mx-auto rounded-xl overflow-hidden border border-white/10 bg-white">
-                <img src={finalPreviewUrl} alt="final-result" className="w-full h-full object-cover" />
+                <img src={finalPreviewUrl} alt="final-result" className="w-full h-auto object-cover" />
               </div>
             </div>
           )}
@@ -531,8 +624,8 @@ const MonitorContent = () => {
               onRetry={
                 uploadError
                   ? () => {
-                      void finishProcessing();
-                    }
+                    void finishProcessing();
+                  }
                   : undefined
               }
             />

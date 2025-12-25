@@ -256,7 +256,6 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                                     <div className="relative w-full max-w-[320px] mx-auto overflow-hidden rounded-xl bg-white">
                                         <img
                                             src={getMediaUrl(processedStrip.url)}
-                                            crossOrigin="anonymous"
                                             alt="Processed strip"
                                             className="w-full h-auto object-cover"
                                         />
@@ -375,7 +374,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                             <div className="space-y-2">
                                 <h3 className="font-medium text-sm text-muted-foreground">Ảnh Đã Ghép</h3>
                                 <div className="rounded-lg overflow-hidden border bg-white">
-                                    <img src={getMediaUrl(processedStrip.url)} alt="Processed strip" className="w-full h-auto" crossOrigin="anonymous" />
+                                    <img src={getMediaUrl(processedStrip.url)} alt="Processed strip" className="w-full h-auto" />
                                 </div>
                                 <Button
                                     className="w-full"
