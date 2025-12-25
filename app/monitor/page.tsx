@@ -475,6 +475,9 @@ const MonitorContent = () => {
       case 'COMPLETED':
         setStatusMessage('Đã hoàn tất. Quét QR để tải ảnh.');
         break;
+      case 'PREPARE': // New state if needed, or default
+        setStatusMessage('Sẵn sàng...');
+        break;
       default:
         setStatusMessage('');
         break;
@@ -484,72 +487,35 @@ const MonitorContent = () => {
   const showPreviewStrip = step === 'REVIEW' || step === 'COMPLETED';
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 gap-8">
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="relative rounded-2xl overflow-hidden border border-white/10 h-[520px]">
-          <Webcam
-            ref={webcamRef}
-            audio={false}
-            screenshotFormat="image/jpeg"
-            videoConstraints={{ facingMode: 'user', width: 1920, height: 1080 }}
-            className={`absolute inset-0 w-full h-full object-cover ${filterClass}`}
-          />
-          {countdown && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white text-8xl font-bold">
-              {countdown}
-            </div>
-          )}
-          {FRAME_ASSETS[selectedFrameId] && (
-            <img
-              src={FRAME_ASSETS[selectedFrameId] ?? undefined}
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-              alt="frame overlay"
-            />
-          )}
+    <div className="min-h-screen bg-white text-black flex flex-col p-6 gap-6 justify-between">
+      {/* Header Info */}
+      <div className="flex justify-between items-center w-full max-w-7xl mx-auto z-10">
+        <div>
+          <p className="text-xs text-black/60 uppercase tracking-widest">Session</p>
+          <p className="font-mono text-xl font-bold">{sessionId || '—'}</p>
         </div>
-        <div className="flex flex-col gap-5">
-          <div>
-            <p className="text-xs text-white/60 uppercase tracking-widest">Session</p>
-            <p className="font-mono">{sessionId || '—'}</p>
+        {statusMessage && (
+          <div className="px-8 py-3 rounded-full bg-black/5 border border-black/10 text-xl font-medium animate-pulse text-black">
+            {statusMessage}
           </div>
-          {statusMessage && (
-            <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-sm text-white/80 min-h-[64px]">
-              {statusMessage}
-            </div>
-          )}
-          <div>
-            <p className="text-sm text-white/60 mb-2">
-              Shots {capturedCount} / {totalShots}
-            </p>
-            <div className="grid grid-cols-3 gap-3">
-              {photoPreviews.map((preview, index) => {
-                const selected = selectedPhotoIndices.includes(index);
-                return (
-                  <div
-                    key={index}
-                    className={`relative aspect-[3/4] rounded-lg border ${selected ? 'border-green-400' : 'border-white/10'
-                      } overflow-hidden bg-white/5 flex items-center justify-center`}
-                  >
-                    {preview ? (
-                      <img src={preview} className="object-cover w-full h-full" alt={`shot-${index}`} />
-                    ) : (
-                      <span className="text-xs text-white/40">Shot {index + 1}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          {showPreviewStrip && (
-            <div>
-              <p className="text-sm text-white/60 mb-2">Preview</p>
-              <div
-                className="relative w-[320px] mx-auto overflow-hidden rounded-xl bg-white"
-                style={selectedFrameId === 'frame-bao' ? { aspectRatio: '2480/3508' } : undefined}
-              >
+        )}
+        <div className="text-right">
+          <p className="text-xs text-black/60 uppercase tracking-widest">Shots</p>
+          <p className="font-mono text-xl font-bold">{capturedCount} / {totalShots}</p>
+        </div>
+      </div>
+
+      {/* Main Content Area - Centered */}
+      <div className="flex-1 w-full flex items-center justify-center min-h-0 relative py-4">
+        {/* If we are in Review/Completed, show the result. Else show Webcam */}
+        {(step === 'REVIEW' || step === 'COMPLETED') ? (
+          <div className="flex gap-12 items-center justify-center h-full w-full">
+            {/* Live Preview Strip */}
+            {showPreviewStrip && (
+              <div className="relative overflow-hidden rounded-xl bg-white shadow-2xl h-[65vh] w-auto border border-black/10"
+                style={selectedFrameId === 'frame-bao' ? { aspectRatio: '2480/3508' } : { aspectRatio: '1080/1920' }}>
                 {selectedFrameId === 'frame-bao' ? (
                   <div className={`relative w-full h-full ${filterClass}`}>
-                    {/* Render specific slots for frame-bao */}
                     {[
                       { top: '19.5%', left: '3.8%', width: '92.4%', height: '36.5%' },
                       { top: '58.5%', left: '3.8%', width: '44.5%', height: '17.5%' },
@@ -557,7 +523,7 @@ const MonitorContent = () => {
                     ].map((slot, index) => (
                       <div
                         key={index}
-                        className="absolute overflow-hidden custom-slot"
+                        className="absolute overflow-hidden custom-slot bg-black/5 flex items-center justify-center border border-black/5"
                         style={{
                           top: slot.top,
                           left: slot.left,
@@ -572,17 +538,15 @@ const MonitorContent = () => {
                             className="object-cover w-full h-full"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
-                            Waiting...
-                          </div>
+                          <span className="text-xs text-black/20 font-bold uppercase tracking-widest">Empty</span>
                         )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className={`flex flex-col ${filterClass}`}>
+                  <div className={`flex flex-col w-full h-full ${filterClass}`}>
                     {[0, 1, 2].map(index => (
-                      <div key={index} className="w-full aspect-[3/4]">
+                      <div key={index} className="w-full flex-1 relative overflow-hidden bg-black/5 border-b border-black/5 last:border-0 flex items-center justify-center">
                         {selectedPreviewImages[index] ? (
                           <img
                             src={selectedPreviewImages[index]!}
@@ -590,9 +554,7 @@ const MonitorContent = () => {
                             className="object-cover w-full h-full"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
-                            Waiting...
-                          </div>
+                          <span className="text-xs text-black/20 font-bold uppercase tracking-widest">Empty</span>
                         )}
                       </div>
                     ))}
@@ -606,47 +568,95 @@ const MonitorContent = () => {
                   />
                 )}
               </div>
-            </div>
-          )}
-          {finalPreviewUrl && (
-            <div className="mt-2">
-              <p className="text-sm text-white/60 mb-2">Final Strip</p>
-              <div className="w-[200px] mx-auto rounded-xl overflow-hidden border border-white/10 bg-white">
-                <img src={finalPreviewUrl} alt="final-result" className="w-full h-auto object-cover" />
+            )}
+
+            {/* QR Code & Final if Completed */}
+            {step === 'COMPLETED' && (
+              <div className="flex flex-col gap-6 text-center bg-black/5 p-8 rounded-3xl border border-black/5 backdrop-blur-sm">
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-black/5">
+                  {shareUrl && (
+                    <QRCodeResult
+                      url={step === 'COMPLETED' ? shareUrl : undefined}
+                      isLoading={isUploading}
+                      errorMessage={uploadError}
+                      onRetry={uploadError ? () => void finishProcessing() : undefined}
+                    />
+                  )}
+                </div>
+                <div>
+                  <p className="text-black font-bold text-2xl tracking-tight">Scan to Download</p>
+                  <p className="text-black/50 text-base">Your photos are ready!</p>
+                </div>
               </div>
-            </div>
-          )}
-          {shareUrl && (
-            <QRCodeResult
-              url={step === 'COMPLETED' ? shareUrl : undefined}
-              isLoading={isUploading}
-              errorMessage={uploadError}
-              onRetry={
-                uploadError
-                  ? () => {
-                    void finishProcessing();
-                  }
-                  : undefined
-              }
+            )}
+          </div>
+        ) : (
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl h-full max-h-[70vh] aspect-video bg-black ring-4 ring-black/5">
+            <Webcam
+              ref={webcamRef}
+              audio={false}
+              screenshotFormat="image/jpeg"
+              videoConstraints={{ facingMode: 'user', width: 1920, height: 1080 }}
+              className={`w-full h-full object-cover ${filterClass}`}
             />
-          )}
+            {/* Countdown Overlay - Huge Center Text */}
+            {countdown && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-md z-20">
+                <span className="text-black text-[20rem] font-black animate-pulse font-mono leading-none drop-shadow-2xl">{countdown}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Grid - 6 Slots */}
+      <div className="w-full max-w-[1920px] mx-auto">
+        <div className="grid grid-cols-6 gap-4">
+          {photoPreviews.map((preview, index) => {
+            const selected = selectedPhotoIndices.includes(index);
+            return (
+              <div
+                key={index}
+                className={`relative aspect-video rounded-xl border-4 ${selected ? 'border-green-500 shadow-xl scale-105 z-10' : 'border-black/5'
+                  } overflow-hidden bg-black/5 flex items-center justify-center transition-all duration-300 group`}
+              >
+                {preview ? (
+                  <img src={preview} className="object-cover w-full h-full" alt={`shot-${index}`} />
+                ) : (
+                  <div className="flex flex-col items-center justify-center opacity-20">
+                    <span className="text-4xl font-bold mb-2 text-black">{index + 1}</span>
+                  </div>
+                )}
+                {selected && (
+                  <div className="absolute top-2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md z-20">
+                    <div className="w-3 h-2 bg-white rounded-[1px] rotate-[-45deg] relative top-[-1px]" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
+
       {!sessionId && (
-        <Button
-          variant="outline"
-          onClick={() => {
-            const manualId = prompt('Enter Session ID')?.trim();
-            if (manualId) {
-              setSessionId(manualId);
-              socket.connect();
-              socket.emit('join', manualId);
-              setShareUrl(`${window.location.origin}/share/${manualId}`);
-            }
-          }}
-        >
-          Join Session
-        </Button>
+        <div className="absolute top-6 left-6 z-50">
+          <Button
+            variant="outline"
+            size="sm"
+            className="opacity-50 hover:opacity-100 transition-opacity border-black/20 text-black hover:bg-black/5"
+            onClick={() => {
+              const manualId = prompt('Enter Session ID')?.trim();
+              if (manualId) {
+                setSessionId(manualId);
+                socket.connect();
+                socket.emit('join', manualId);
+                setShareUrl(`${window.location.origin}/share/${manualId}`);
+              }
+            }}
+          >
+            Manual Join
+          </Button>
+        </div>
       )}
     </div>
   );
