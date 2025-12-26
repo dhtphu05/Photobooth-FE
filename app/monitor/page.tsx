@@ -417,6 +417,11 @@ const MonitorContent = () => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        // For opaque frame (Thanh Xuan), draw it as background first
+        if (overlayImage && selectedFrameId === 'frame-thanh-xuan') {
+          ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
+        }
+
         if (isCustomFrame) {
           const slots = [
             { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
@@ -454,7 +459,8 @@ const MonitorContent = () => {
           });
         }
 
-        if (overlayImage) {
+        // For standard transparent frames, draw overlay on top
+        if (overlayImage && selectedFrameId !== 'frame-thanh-xuan') {
           ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
         }
 
