@@ -322,31 +322,21 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                     <CardContent className="space-y-4">
                         {hasVideos ? (
                             <>
-                                <div className="relative w-full max-w-[320px] mx-auto overflow-hidden rounded-xl bg-black">
-                                    <div className="relative z-0 flex flex-col">
-                                        {videoSlots.map((slot, index) => (
-                                            <video
-                                                key={slot.key}
-                                                ref={(element) => {
-                                                    videoRefs.current[index] = element;
-                                                }}
-                                                src={getMediaUrl(slot.media.url)}
-                                                autoPlay
-                                                muted
-                                                playsInline
-                                                onEnded={() => handleVideoEnded(index)}
-                                                className="w-full h-[240px] object-cover"
-                                            />
-                                        ))}
-                                    </div>
-                                    {selectedFrame && (
-                                        <img
-                                            src={selectedFrame}
-                                            crossOrigin="anonymous"
-                                            alt="frame overlay"
-                                            className="absolute inset-0 z-10 w-full h-full pointer-events-none"
+                                <div className="relative w-full max-w-[320px] mx-auto overflow-hidden rounded-xl bg-black"
+                                    style={(session?.selectedFrame === 'frame-bao' || session?.selectedFrame === 'frame-thanh-xuan') ? { aspectRatio: '2480/3508' } : undefined}>
+                                    <div className="relative z-0 flex flex-col h-full">
+                                        <video
+                                            ref={(element) => {
+                                                videoRefs.current[0] = element;
+                                            }}
+                                            src={getMediaUrl(videos[0].url)}
+                                            autoPlay
+                                            muted
+                                            playsInline
+                                            loop
+                                            className="w-full h-full object-cover"
                                         />
-                                    )}
+                                    </div>
                                 </div>
                                 <Button
                                     className="w-full"
