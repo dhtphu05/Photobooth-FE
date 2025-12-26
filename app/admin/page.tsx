@@ -44,8 +44,9 @@ export default function AdminPage() {
   const handleDownload = (session: Session) => {
     // Logic to download all media or the main strip? 
     // For now, let's look for the PROCESSED image first.
-    const processedMedia = session.medias.find(m => m.type === 'PROCESSED');
-    const mediaToDownload = processedMedia || session.medias[0];
+    const medias = session.medias || [];
+    const processedMedia = medias.find(m => m.type === 'PROCESSED');
+    const mediaToDownload = processedMedia || medias[0];
 
     if (mediaToDownload) {
       const link = document.createElement("a")
@@ -59,11 +60,12 @@ export default function AdminPage() {
 
   // Helper to extract display image
   const getDisplayImage = (session: Session) => {
-    const processed = session.medias.find(m => m.type === 'PROCESSED');
+    const medias = session.medias || [];
+    const processed = medias.find(m => m.type === 'PROCESSED');
     if (processed) return processed.url;
     // Fallback to any image if processed not ready (e.g. raw captured?)
     // Usually PROCESSED is what we want for the thumbnail.
-    return session.medias[0]?.url || "/placeholder.svg";
+    return medias[0]?.url || "/placeholder.svg";
   }
 
   return (
@@ -178,7 +180,7 @@ export default function AdminPage() {
                           variant="outline"
                           size="sm"
                           className="flex-1 border-black/10 text-black hover:bg-black/5 rounded-lg text-xs"
-                          disabled={!session.medias.some(m => m.type === 'PROCESSED')}
+                          disabled={!(session.medias || []).some(m => m.type === 'PROCESSED')}
                         >
                           <Download className="w-3 h-3 mr-1.5" />
                           Tải Ảnh

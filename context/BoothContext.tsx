@@ -287,6 +287,16 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  // Auto-capture logic for continuous shooting
+  useEffect(() => {
+    if (step === 'CAPTURE' && !isCapturePending && capturedCount < TOTAL_SHOTS) {
+      const timer = setTimeout(() => {
+        takeShot();
+      }, 1000); // Small buffer between shots
+      return () => clearTimeout(timer);
+    }
+  }, [step, isCapturePending, capturedCount, takeShot]);
+
   useEffect(() => {
     captureRequestIdRef.current = captureRequestId;
   }, [captureRequestId]);

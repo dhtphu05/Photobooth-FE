@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BoothProvider, useBooth } from '@/context/BoothContext';
 
-const TIMER_OPTIONS = [3, 5, 10];
+const TIMER_OPTIONS = [5, 7, 10];
 const FRAME_OPTIONS = [
   { id: 'frame-1', label: 'Classic' },
   { id: 'frame-bao', label: 'Báo' },

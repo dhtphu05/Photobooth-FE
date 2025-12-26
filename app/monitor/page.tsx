@@ -501,6 +501,15 @@ const MonitorContent = () => {
       const uploads: Promise<unknown>[] = [
         uploadSessionMedia(sessionId, { file: stripBlob }, { type: 'PROCESSED' }),
       ];
+
+      // Upload selected original photos
+      selectedPhotoIndices.forEach((index) => {
+        const blob = rawPhotos[index];
+        if (blob) {
+          uploads.push(uploadSessionMedia(sessionId, { file: blob }, { type: 'ORIGINAL' }));
+        }
+      });
+
       if (videoBlob) {
         uploads.push(uploadSessionMedia(sessionId, { file: videoBlob }, { type: 'VIDEO' }));
       }
@@ -558,7 +567,7 @@ const MonitorContent = () => {
     }
   }, [isUploading, step]);
 
-  const showPreviewStrip = step === 'REVIEW' || step === 'COMPLETED';
+  const showPreviewStrip = step === 'SELECTION' || step === 'REVIEW' || step === 'COMPLETED';
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col p-6 gap-6 justify-between">
@@ -581,8 +590,8 @@ const MonitorContent = () => {
 
       {/* Main Content Area - Centered */}
       <div className="flex-1 w-full flex items-center justify-center min-h-0 relative py-4">
-        {/* If we are in Review/Completed, show the result. Else show Webcam */}
-        {(step === 'REVIEW' || step === 'COMPLETED') ? (
+        {/* If we are in Selection/Review/Completed, show the result. Else show Webcam */}
+        {(step === 'SELECTION' || step === 'REVIEW' || step === 'COMPLETED') ? (
           <div className="flex gap-12 items-center justify-center h-full w-full">
             {/* Live Preview Strip */}
             {showPreviewStrip && (
