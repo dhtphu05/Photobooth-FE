@@ -49,7 +49,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const [photoPreviews, setPhotoPreviews] = useState<(string | null)[]>(Array(TOTAL_SHOTS).fill(null));
   const [selectedPhotoIndices, setSelectedPhotoIndices] = useState<number[]>([]);
   const [capturedCount, setCapturedCount] = useState(0);
-  const [selectedFrameId, setSelectedFrameId] = useState('frame-1');
+  const [selectedFrameId, setSelectedFrameId] = useState('frame-bao');
   const [selectedFilter, setSelectedFilter] = useState('normal');
   const [captureRequestId, setCaptureRequestId] = useState<string | null>(null);
   const captureRequestIdRef = useRef<string | null>(null);
@@ -65,7 +65,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setSelectedPhotoIndices([]);
     setRawPhotos(Array(TOTAL_SHOTS).fill(null));
     setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
-    setSelectedFrameId('frame-1');
+    setSelectedFrameId('frame-bao');
     setSelectedFilter('normal');
     setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
     setCaptureRequestId(null);

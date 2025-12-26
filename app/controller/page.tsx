@@ -12,9 +12,8 @@ import { BoothProvider, useBooth } from '@/context/BoothContext';
 const TIMER_OPTIONS = [3, 5, 10];
 const FRAME_OPTIONS = [
   { id: 'frame-1', label: 'Classic' },
-  { id: 'frame-2', label: 'Minimal' },
-  { id: 'frame-3', label: 'Pop' },
   { id: 'frame-bao', label: 'Báo' },
+  { id: 'frame-thanh-xuan', label: 'Thanh Xuân' },
 ];
 const FILTER_OPTIONS = [
   { id: 'normal', label: 'Original' },

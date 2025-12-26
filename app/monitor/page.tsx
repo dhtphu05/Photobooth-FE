@@ -15,6 +15,7 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-2': null,
   'frame-3': null,
   'frame-bao': '/frame-bao.png',
+  'frame-thanh-xuan': '/frame-thanh-xuan.png',
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -205,19 +206,21 @@ const MonitorContent = () => {
 
   const filterClass = FILTER_CLASS_MAP[selectedFilter] ?? '';
 
+  const isCustomFrame = ['frame-bao', 'frame-thanh-xuan'].includes(selectedFrameId);
+
   const composeStripImage = useCallback(async () => {
     const selectedBlobs = selectedPhotoIndices
       .map(index => rawPhotos[index])
       .filter((blob): blob is Blob => Boolean(blob));
 
-    if (selectedFrameId !== 'frame-bao' && selectedBlobs.length !== requiredShots) {
+    if (!isCustomFrame && selectedBlobs.length !== requiredShots) {
       throw new Error('Thiếu ảnh được chọn');
     }
 
     const bitmaps = await Promise.all(selectedBlobs.map(blob => createImageBitmap(blob)));
     const canvas = document.createElement('canvas');
 
-    if (selectedFrameId === 'frame-bao') {
+    if (isCustomFrame) {
       canvas.width = 2480;
       canvas.height = 3508;
     } else {
@@ -236,7 +239,8 @@ const MonitorContent = () => {
 
     ctx.filter = CANVAS_FILTER_MAP[selectedFilter] ?? 'none';
 
-    if (selectedFrameId === 'frame-bao') {
+    if (isCustomFrame) {
+      // Shared slots for both frame-bao and frame-thanh-xuan for now
       const slots = [
         { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
         { x: 0.038, y: 0.585, w: 0.445, h: 0.175 },
@@ -298,27 +302,21 @@ const MonitorContent = () => {
     });
     const previewUrl = URL.createObjectURL(stripBlob);
     return { stripBlob, previewUrl };
-  }, [rawPhotos, requiredShots, selectedFilter, selectedFrameId, selectedPhotoIndices]);
+  }, [rawPhotos, requiredShots, selectedFilter, selectedFrameId, selectedPhotoIndices, isCustomFrame]);
 
   const composeVideoRecap = useCallback(async (): Promise<Blob | null> => {
-    // 1. Get Selected Video Clips (based on valid photos chosen)
     const available = selectedPhotoIndices
       .map(index => rawVideoClips[index])
       .filter((clip): clip is Blob => Boolean(clip));
 
     if (available.length === 0) {
-      // Fallback or explicit null
       return null;
     }
 
-    // 2. Prepare Slots based on selected frame
-    // We treat video clips exactly like photos in the frame slots.
     let slots: Blob[] = [...available];
 
-    // For 'frame-bao' we expect 3 items. If less, we loop.
-    // For standard frames, we expect `requiredShots`. 
-    const isFrameBao = selectedFrameId === 'frame-bao';
-    const targetCount = isFrameBao ? 3 : requiredShots;
+    // Check if using a custom frame logic (3 slots)
+    const targetCount = isCustomFrame ? 3 : requiredShots;
 
     while (slots.length < targetCount && available.length > 0) {
       slots.push(available[slots.length % available.length]);
@@ -330,7 +328,6 @@ const MonitorContent = () => {
     }
 
     try {
-      // 3. Create Video Elements for each clip
       const videos = await Promise.all(
         clips.map(
           blob =>
@@ -356,7 +353,6 @@ const MonitorContent = () => {
         ),
       );
 
-      // 4. Load Overlay Image if exists
       let overlayImage: HTMLImageElement | null = null;
       const overlayUrl = FRAME_ASSETS[selectedFrameId] ?? null;
       if (overlayUrl) {
@@ -374,14 +370,10 @@ const MonitorContent = () => {
         }
       }
 
-      // 5. Setup Canvas
       const canvas = document.createElement('canvas');
-      // Use scaled dimensions for video to handle performance/file size
-      // Frame Bao ratio: 2480/3508
-      // Sticking to 1080 width for decent quality but manageable rendering
-      if (isFrameBao) {
+      if (isCustomFrame) {
         canvas.width = 1080;
-        canvas.height = 1528; // 1080 * (3508/2480)
+        canvas.height = 1528;
       } else {
         canvas.width = 1080;
         canvas.height = 1920;
@@ -406,7 +398,6 @@ const MonitorContent = () => {
         };
       });
 
-      // 6. Start Playback
       videos.forEach(video => {
         video.loop = true;
         video.currentTime = 0;
@@ -415,26 +406,18 @@ const MonitorContent = () => {
 
       recorder.start();
 
-      // Determine duration
       const durations = videos.map(video =>
         Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 3,
       );
-      // Play for at least the longest video loop x 2, or fixed time like 6s
       const targetDuration = Math.max(...durations, 3) * 2 * 1000;
 
       const startTime = performance.now();
 
-      // 7. Animation Loop
       const drawFrame = () => {
-        // Clear & Background
-        ctx.fillStyle = '#ffffff'; // White bg matches photo
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Apply shared filter if any (simplified)
-        // ctx.filter = CANVAS_FILTER_MAP[selectedFilter] ?? 'none'; // Filters on video canvas can be heavy
-
-        // Draw slots
-        if (isFrameBao) {
+        if (isCustomFrame) {
           const slots = [
             { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
             { x: 0.038, y: 0.585, w: 0.445, h: 0.175 },
@@ -448,7 +431,6 @@ const MonitorContent = () => {
               const dw = slot.w * canvas.width;
               const dh = slot.h * canvas.height;
 
-              // Aspect fill logic for video
               const vW = video.videoWidth;
               const vH = video.videoHeight;
               const srcRatio = vW / vH;
@@ -462,24 +444,16 @@ const MonitorContent = () => {
                 sh = vW / dstRatio;
                 sy = (vH - sh) / 2;
               }
-              // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
               ctx.drawImage(video, sx, sy, sw, sh, dx, dy, dw, dh);
             }
           });
         } else {
-          // Standard vertical stack
           const slotHeight = canvas.height / targetCount;
           videos.forEach((video, index) => {
-            // Simple stretch or crop centered? Assuming simple stretch matches photo logic currently
-            // But better to center crop if possible, or just draw full
             ctx.drawImage(video, 0, index * slotHeight, canvas.width, slotHeight);
           });
         }
 
-        // Removed filter for overlay if applied
-        // ctx.filter = 'none';
-
-        // Draw Overlay
         if (overlayImage) {
           ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
         }
@@ -502,9 +476,9 @@ const MonitorContent = () => {
 
     } catch (error) {
       console.warn('Không thể ghép video recap', error);
-      return clips[0] ?? null; // Fallback to first raw clip
+      return clips[0] ?? null;
     }
-  }, [rawVideoClips, requiredShots, selectedFrameId, selectedPhotoIndices]);
+  }, [rawVideoClips, requiredShots, selectedFrameId, selectedPhotoIndices, isCustomFrame]);
 
   const finishProcessing = useCallback(async () => {
     if (!sessionId || isUploading) return;
@@ -613,8 +587,8 @@ const MonitorContent = () => {
             {/* Live Preview Strip */}
             {showPreviewStrip && (
               <div className="relative overflow-hidden rounded-xl bg-white shadow-2xl h-[65vh] w-auto border border-black/10"
-                style={selectedFrameId === 'frame-bao' ? { aspectRatio: '2480/3508' } : { aspectRatio: '1080/1920' }}>
-                {selectedFrameId === 'frame-bao' ? (
+                style={isCustomFrame ? { aspectRatio: '2480/3508' } : { aspectRatio: '1080/1920' }}>
+                {isCustomFrame ? (
                   <div className={`relative w-full h-full ${filterClass}`}>
                     {[
                       { top: '19.5%', left: '3.8%', width: '92.4%', height: '36.5%' },

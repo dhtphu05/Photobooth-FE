@@ -106,6 +106,96 @@ export const useCreateSession = <TError = AxiosError<unknown>,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * @summary List all sessions
+ */
+export const getSessions = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<Session[]>> => {
+    
+    
+    return axios.get(
+      `/api/sessions`,options
+    );
+  }
+
+
+
+
+export const getGetSessionsQueryKey = () => {
+    return [
+    `/api/sessions`
+    ] as const;
+    }
+
+    
+export const getGetSessionsQueryOptions = <TData = Awaited<ReturnType<typeof getSessions>>, TError = AxiosError<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSessionsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSessions>>> = ({ signal }) => getSessions({ signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetSessionsQueryResult = NonNullable<Awaited<ReturnType<typeof getSessions>>>
+export type GetSessionsQueryError = AxiosError<unknown>
+
+
+export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, TError = AxiosError<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSessions>>,
+          TError,
+          Awaited<ReturnType<typeof getSessions>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSessions>>,
+          TError,
+          Awaited<ReturnType<typeof getSessions>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List all sessions
+ */
+
+export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetSessionsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * @summary Update an existing session
  */
 export const updateSession = (
