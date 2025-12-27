@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BoothProvider, useBooth } from '@/context/BoothContext';
 
-const TIMER_OPTIONS = [5, 7, 10];
+const TIMER_OPTIONS = [7, 10];
 const FRAME_OPTIONS = [
-  { id: 'frame-danang', label: 'Đà Nẵng', image: '/FRAME-ĐÀ-NẴNG.png' },
-  { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/FRAME-BÁO-XUÂN.png' },
-  { id: 'frame-chuyen-tau', label: 'Chuyển tàu', image: '/FRAME-CHUYẾN-TÀU-THANH-XUÂN.png' },
+  { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang.png' },
+  { id: 'frame-bao', label: 'Báo Xuân', image: '/frame-bao-xuan.png' },
+  { id: 'frame-thanh-xuan', label: 'Chuyến tàu', image: '/frame-chuyen-tau-thanh-xuan.png' },
 ];
 const FILTER_OPTIONS = [
   { id: 'normal', label: 'Original' },
@@ -52,6 +52,7 @@ const ControllerContent = () => {
 
   const { mutate: createSession, isPending: isCreating } = useCreateSession();
   const [origin, setOrigin] = useState('');
+  const [localTimer, setLocalTimer] = useState(10);
   const monitorWindow = useRef<Window | null>(null);
 
   useEffect(() => {
@@ -129,7 +130,11 @@ const ControllerContent = () => {
   }, [capturedCount, totalShots, step, setStep]);
 
   const handleTimerSelect = (seconds: number) => {
-    setTimer(seconds);
+    setLocalTimer(seconds);
+  };
+
+  const handleStartCapture = () => {
+    setTimer(localTimer);
   };
 
   const handleCapture = () => {
@@ -154,50 +159,83 @@ const ControllerContent = () => {
   const canProceedSelection = selectedPhotoIndices.length === requiredShots;
 
   const renderConfigStep = () => (
-    <div className="space-y-4">
-      <p className="text-center text-sm text-muted-foreground">Select a timer duration to begin</p>
-      <div className="grid grid-cols-3 gap-3">
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-semibold">Bắt đầu chụp</h2>
+        <p className="text-muted-foreground">Chọn thời gian đếm ngược để bắt đầu</p>
+      </div>
+      <div className="grid grid-cols-2 gap-6 max-w-lg mx-auto">
         {TIMER_OPTIONS.map(option => (
           <Button
             key={option}
             onClick={() => handleTimerSelect(option)}
-            variant={timerDuration === option ? 'default' : 'outline'}
+            variant={localTimer === option ? 'default' : 'outline'}
             disabled={isProcessing}
+            className={`h-32 text-4xl font-bold rounded-2xl transition-all ${localTimer === option
+                ? 'bg-black text-white shadow-xl scale-105 ring-4 ring-gray-200'
+                : 'hover:bg-gray-50 border-2 hover:border-black'
+              }`}
           >
             {option}s
           </Button>
         ))}
       </div>
+
+      <div className="max-w-lg mx-auto pt-4">
+        <Button
+          onClick={handleStartCapture}
+          disabled={isProcessing}
+          className="w-full h-20 text-2xl font-bold rounded-2xl shadow-xl hover:scale-[1.02] transition-transform bg-black text-white"
+        >
+          Bắt Đầu Chụp 📸
+        </Button>
+      </div>
     </div>
   );
 
   const renderCaptureStep = () => (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="text-center">
-        <p className="text-sm text-muted-foreground">Shot {capturedCount} / {totalShots}</p>
+        <h2 className="text-2xl font-bold">Đang chụp ảnh</h2>
+        <p className="text-lg text-muted-foreground mt-1">Ảnh {capturedCount} / {totalShots}</p>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+
+      <div className="grid grid-cols-3 gap-4">
         {photoPreviews.map((preview, index) => (
-          <div key={index} className="rounded-lg border border-dashed border-gray-300 h-24 flex items-center justify-center overflow-hidden">
-            {preview ? <img src={preview} alt={`shot-${index}`} className="object-cover w-full h-full" /> : <span className="text-xs text-muted-foreground">Waiting</span>}
+          <div
+            key={index}
+            className={`
+              relative rounded-xl overflow-hidden aspect-[3/4] flex items-center justify-center 
+              ${preview ? 'bg-black shadow-md' : 'bg-gray-100 border-2 border-dashed border-gray-300'}
+            `}
+          >
+            {preview ? (
+              <img src={preview} alt={`shot-${index}`} className="object-cover w-full h-full" />
+            ) : (
+              <span className="text-sm font-medium text-gray-400">Ảnh {index + 1}</span>
+            )}
+            {index === capturedCount && !preview && (
+              <div className="absolute inset-0 bg-black/5 animate-pulse" />
+            )}
           </div>
         ))}
       </div>
+
       <Button
         size="lg"
-        className="w-full h-16 text-xl font-bold"
+        className="w-full h-24 text-2xl font-bold rounded-2xl shadow-lg mt-4 bg-black hover:bg-gray-900 active:scale-[0.98] transition-all"
         onClick={handleCapture}
         disabled={captureDisabled || isProcessing}
       >
         {isCapturePending ? (
           <>
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Capturing...
+            <Loader2 className="w-8 h-8 mr-3 animate-spin" />
+            Đang xử lý...
           </>
         ) : (
           <>
-            <Camera className="w-5 h-5 mr-2" />
-            Capture
+            <Camera className="w-8 h-8 mr-3" />
+            Chụp Ngay
           </>
         )}
       </Button>
@@ -205,33 +243,59 @@ const ControllerContent = () => {
   );
 
   const renderSelectionStep = () => (
-    <div className="space-y-4">
-      <p className="text-center text-sm text-muted-foreground">Select {requiredShots} photos</p>
-      <div className="grid grid-cols-3 gap-3">
+    <div className="space-y-6">
+      <div className="text-center space-y-1">
+        <h2 className="text-2xl font-bold">Chọn ảnh ưng ý</h2>
+        <p className="text-muted-foreground">Chọn {requiredShots} ảnh đẹp nhất để in</p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
         {photoPreviews.map((preview, index) => {
           const selected = selectedPhotoIndices.includes(index);
+          const selectionOrder = selectedPhotoIndices.indexOf(index) + 1;
+
           return (
             <button
               key={index}
-              className={`rounded-lg border-4 overflow-hidden aspect-[3/4] ${selected ? 'border-black' : 'border-transparent'}`}
+              className={`
+                relative rounded-xl overflow-hidden aspect-[3/4] transition-all duration-200
+                ${selected
+                  ? 'ring-4 ring-black shadow-xl scale-[1.02]'
+                  : 'ring-1 ring-gray-200 hover:ring-2 hover:ring-gray-300'}
+              `}
               onClick={() => togglePhotoSelection(index)}
               disabled={!preview}
             >
               {preview ? (
-                <img src={preview} alt={`preview-${index}`} className="object-cover w-full h-full" />
+                <>
+                  <img src={preview} alt={`preview-${index}`} className="object-cover w-full h-full" />
+                  {selected && (
+                    <div className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black text-white font-bold shadow-md">
+                      {selectionOrder}
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xs text-muted-foreground">
-                  Empty
+                  Trống
                 </div>
               )}
             </button>
           );
         })}
       </div>
-      <p className="text-center text-sm">Selected: {selectedPhotoIndices.length} / {requiredShots}</p>
-      <Button onClick={confirmSelection} disabled={!canProceedSelection} className="w-full h-12 text-lg">
-        Next
-      </Button>
+
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 pb-8 sm:static sm:p-0 sm:bg-transparent sm:border-0">
+        <p className="text-center text-sm font-medium mb-3">Đã chọn: <span className="text-black font-bold text-lg">{selectedPhotoIndices.length}</span> / {requiredShots}</p>
+        <Button
+          onClick={confirmSelection}
+          disabled={!canProceedSelection}
+          className="w-full h-16 text-xl font-bold rounded-xl shadow-lg"
+        >
+          Tiếp Tục
+          <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+        </Button>
+      </div>
     </div>
   );
 
@@ -316,11 +380,14 @@ const ControllerContent = () => {
   };
 
   const renderCompletedStep = () => (
-    <div className="space-y-4 text-center">
-      <p className="text-lg font-semibold">Session completed!</p>
-      <p className="text-sm text-muted-foreground">Scan QR on the monitor to download.</p>
-      <Button variant="outline" className="w-full" onClick={resetSession}>
-        Start New Session
+    <div className="space-y-6 text-center py-10">
+      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+      </div>
+      <h2 className="text-3xl font-bold">Hoàn tất!</h2>
+      <p className="text-lg text-muted-foreground">Quét mã QR trên màn hình lớn để tải ảnh ngay nhé.</p>
+      <Button variant="outline" className="w-full h-16 text-xl font-medium mt-8 border-2" onClick={resetSession}>
+        Chụp Lượt Mới
       </Button>
     </div>
   );
@@ -348,9 +415,9 @@ const ControllerContent = () => {
             <CardTitle className="text-center">Photobooth Controller</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
-            <p className="text-muted-foreground">Start a new session to begin.</p>
-            <Button onClick={handleCreateSession} disabled={isCreating} className="w-full h-14 text-lg">
-              {isCreating ? 'Creating...' : 'Start Session'}
+            <p className="text-muted-foreground text-lg mb-8">Chạm vào nút bên dưới để bắt đầu phiên chụp mới</p>
+            <Button onClick={handleCreateSession} disabled={isCreating} className="w-full h-20 text-2xl font-bold rounded-2xl shadow-xl hover:scale-[1.02] transition-transform">
+              {isCreating ? 'Đang tạo...' : 'Bắt Đầu Chụp'}
             </Button>
           </CardContent>
         </Card>
@@ -362,14 +429,12 @@ const ControllerContent = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-5xl">
         <CardHeader>
-          <CardTitle className="text-center">Photobooth Controller</CardTitle>
+          <CardTitle className="text-center sr-only">Photobooth Controller</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-6">
-            <p className="text-xs text-muted-foreground">Session ID</p>
-            <p className="font-mono text-sm">{sessionId}</p>
-            <p className="text-xs text-muted-foreground mt-2">Share Link</p>
-            <p className="font-mono text-sm break-all">{origin}/share/{sessionId}</p>
+          <div className="mb-6 flex flex-col items-center">
+            <h1 className="text-3xl font-bold mb-2">📸 Photobooth Controller</h1>
+            <p className="text-sm text-muted-foreground">Mã Phiên: <span className="font-mono font-bold text-black">{sessionId}</span></p>
           </div>
           {renderStepContent()}
         </CardContent>

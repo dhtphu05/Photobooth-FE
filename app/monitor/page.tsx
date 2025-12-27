@@ -16,9 +16,9 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-3': null,
   'frame-bao': '/frame-bao.png',
   'frame-thanh-xuan': '/frame-thanh-xuan.png',
-  'frame-danang': '/frame-ĐÀ-NẴNG.png',
-  'frame-bao-xuan': '/frame-BÁO-XUÂN.png',
-  'frame-chuyen-tau': '/frame-CHUYẾN-TÀU-THANH-XUÂN.png',
+  'frame-danang': '/frame-da-nang.png',
+  'frame-bao-xuan': '/frame-bao-xuan.png',
+  'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -54,7 +54,7 @@ const OVERLAY_CONFIG = {
   // --- CẤU HÌNH TINH CHỈNH CHO XUẤT ẢNH/VIDEO (So với Preview) ---
   EXPORT_CONFIG: {
     // Dịch xuống một chút so với preview (VD: 0.005 là 0.5%)
-    TOP_OFFSET_PERCENT: 0.005,
+    TOP_OFFSET_PERCENT: 0.002,
     // Tăng kích thước chữ xuất ra (VD: 1.1 là to hơn 10%)
     FONT_SCALE: 1.5,
   }
@@ -870,7 +870,7 @@ const MonitorContent = () => {
             {/* Countdown Overlay - Huge Center Text */}
             {countdown && (
               <div className="absolute inset-0 flex items-center justify-center z-20">
-                <span className="text-white text-[20rem] font-black animate-pulse font-mono leading-none drop-shadow-2xl">{countdown}</span>
+                <span className="text-white text-[15rem] font-black animate-pulse font-mono leading-none drop-shadow-2xl">{countdown}</span>
               </div>
             )}
           </div>
