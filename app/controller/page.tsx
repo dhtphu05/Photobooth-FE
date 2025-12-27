@@ -12,7 +12,7 @@ import { BoothProvider, useBooth } from '@/context/BoothContext';
 const TIMER_OPTIONS = [7, 10];
 const FRAME_OPTIONS = [
   { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang.png' },
-  { id: 'frame-bao', label: 'Báo Xuân', image: '/frame-bao-xuan.png' },
+  { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/frame-bao-xuan.png' },
   { id: 'frame-thanh-xuan', label: 'Chuyến tàu', image: '/frame-chuyen-tau-thanh-xuan.png' },
 ];
 const FILTER_OPTIONS = [

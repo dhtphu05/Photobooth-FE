@@ -298,13 +298,22 @@ const MonitorContent = () => {
             sh = bitmap.width / dstRatio;
             sy = (bitmap.height - sh) / 2;
           }
-          ctx.drawImage(bitmap, sx, sy, sw, sh, dx, dy, dw, dh);
+
+          ctx.save();
+          ctx.translate(dx + dw, dy);
+          ctx.scale(-1, 1);
+          ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, dw, dh);
+          ctx.restore();
         }
       });
     } else {
       const slotHeight = canvas.height / requiredShots;
       bitmaps.forEach((bitmap, index) => {
-        ctx.drawImage(bitmap, 0, index * slotHeight, canvas.width, slotHeight);
+        ctx.save();
+        ctx.translate(canvas.width, index * slotHeight);
+        ctx.scale(-1, 1);
+        ctx.drawImage(bitmap, 0, 0, canvas.width, slotHeight);
+        ctx.restore();
       });
     }
 
@@ -536,13 +545,22 @@ const MonitorContent = () => {
                 sh = vW / dstRatio;
                 sy = (vH - sh) / 2;
               }
-              ctx.drawImage(video, sx, sy, sw, sh, dx, dy, dw, dh);
+
+              ctx.save();
+              ctx.translate(dx + dw, dy);
+              ctx.scale(-1, 1);
+              ctx.drawImage(video, sx, sy, sw, sh, 0, 0, dw, dh);
+              ctx.restore();
             }
           });
         } else {
           const slotHeight = canvas.height / targetCount;
           videos.forEach((video, index) => {
-            ctx.drawImage(video, 0, index * slotHeight, canvas.width, slotHeight);
+            ctx.save();
+            ctx.translate(canvas.width, index * slotHeight);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, canvas.width, slotHeight);
+            ctx.restore();
           });
         }
 
@@ -863,6 +881,7 @@ const MonitorContent = () => {
             <Webcam
               ref={webcamRef}
               audio={false}
+              mirrored={true}
               screenshotFormat="image/jpeg"
               videoConstraints={{ facingMode: 'user', width: 1920, height: 1080 }}
               className={`w-full h-full object-cover ${filterClass}`}
@@ -878,33 +897,35 @@ const MonitorContent = () => {
       </div>
 
       {/* Bottom Grid - 6 Slots */}
-      <div className="w-full max-w-[1920px] mx-auto">
-        <div className="grid grid-cols-6 gap-4">
-          {photoPreviews.map((preview, index) => {
-            const selected = selectedPhotoIndices.includes(index);
-            return (
-              <div
-                key={index}
-                className={`relative aspect-video rounded-xl border-4 ${selected ? 'border-green-500 shadow-xl scale-105 z-10' : 'border-black/5'
-                  } overflow-hidden bg-black/5 flex items-center justify-center transition-all duration-300 group`}
-              >
-                {preview ? (
-                  <img src={preview} className="object-cover w-full h-full" alt={`shot-${index}`} />
-                ) : (
-                  <div className="flex flex-col items-center justify-center opacity-20">
-                    <span className="text-4xl font-bold mb-2 text-black">{index + 1}</span>
-                  </div>
-                )}
-                {selected && (
-                  <div className="absolute top-2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md z-20">
-                    <div className="w-3 h-2 bg-white rounded-[1px] rotate-[-45deg] relative top-[-1px]" />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      {step !== 'REVIEW' && (
+        <div className="w-full max-w-[1920px] mx-auto">
+          <div className="grid grid-cols-6 gap-4">
+            {photoPreviews.map((preview, index) => {
+              const selected = selectedPhotoIndices.includes(index);
+              return (
+                <div
+                  key={index}
+                  className={`relative aspect-video rounded-xl border-4 ${selected ? 'border-green-500 shadow-xl scale-105 z-10' : 'border-black/5'
+                    } overflow-hidden bg-black/5 flex items-center justify-center transition-all duration-300 group`}
+                >
+                  {preview ? (
+                    <img src={preview} className="object-cover w-full h-full" alt={`shot-${index}`} />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center opacity-20">
+                      <span className="text-4xl font-bold mb-2 text-black">{index + 1}</span>
+                    </div>
+                  )}
+                  {selected && (
+                    <div className="absolute top-2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md z-20">
+                      <div className="w-3 h-2 bg-white rounded-[1px] rotate-[-45deg] relative top-[-1px]" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {!sessionId && (
         <div className="absolute top-6 left-6 z-50">
