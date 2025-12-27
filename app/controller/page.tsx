@@ -46,6 +46,8 @@ const ControllerContent = () => {
     resetSession,
     selectedFrameId,
     selectedFilter,
+    customMessage,
+    setCustomMessage,
   } = useBooth();
 
   const { mutate: createSession, isPending: isCreating } = useCreateSession();
@@ -265,6 +267,20 @@ const ControllerContent = () => {
                 )}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <p className="font-semibold text-lg text-center">Lời nhắn</p>
+          <div className="flex justify-center">
+            <input
+              type="text"
+              value={customMessage}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              placeholder="Nhập tên..."
+              className="w-full max-w-sm rounded-lg border border-gray-300 p-3 text-center text-lg"
+              maxLength={30}
+            />
           </div>
         </div>
 

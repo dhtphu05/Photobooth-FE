@@ -4,6 +4,7 @@ type UpdateConfigPayload = {
     selectedFilter?: string;
     timerDuration?: number;
     selectedPhotoIndices?: number[];
+    customMessage?: string;
     captureRequestId?: string | null;
 };
 

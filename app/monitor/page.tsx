@@ -31,7 +31,28 @@ const CANVAS_FILTER_MAP: Record<string, string> = {
   normal: 'none',
   bw: 'grayscale(1)',
   sepia: 'sepia(1)',
+  bw: 'grayscale(1)',
+  sepia: 'sepia(1)',
 };
+
+// --- CONFIGURATION FOR OVERLAY TEXT ---
+const OVERLAY_CONFIG = {
+  TIMESTAMP: {
+    TOP_PERCENT: 0.165,      // Dịch chuyển lên/xuống (0.0 - 1.0)
+    LEFT_PERCENT: 0.000001,     // Dịch chuyển trái/phải (0.0 - 1.0)
+    WIDTH_PERCENT: 0.26,    // Chiều rộng khu vực chứa text
+    FONT_SIZE_PERCENT: 0.01, // Kích thước chữ so với chiều cao ảnh (gốc ~40px/3508px ≈ 0.011, tăng lên tí cho dễ nhìn)
+    ALIGN: 'center' as CanvasTextAlign,
+  },
+  MESSAGE: {
+    TOP_PERCENT: 0.165,     // Dịch chuyển lên/xuống (gần với timestamp)
+    LEFT_PERCENT: 0.35,    // Vị trí bắt đầu block msg
+    WIDTH_PERCENT: 0.145,   // Chiều rộng block msg
+    FONT_SIZE_PERCENT: 0.011, // Kích thước chữ
+    ALIGN: 'center' as CanvasTextAlign,
+  }
+};
+// --------------------------------------
 
 const MonitorContent = () => {
   const searchParams = useSearchParams();
@@ -53,6 +74,7 @@ const MonitorContent = () => {
     requiredShots,
     totalShots,
     capturedCount,
+    customMessage,
   } = useBooth();
 
   const webcamRef = useRef<Webcam>(null);
@@ -294,6 +316,61 @@ const MonitorContent = () => {
       }
     }
 
+    // Draw Overlay Text (Timestamp & Message)
+    if (isCustomFrame) {
+      const now = new Date();
+      // Format: 17h37, 31/12/2025
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const year = now.getFullYear();
+      const timestampText = `${hours}h${minutes},${day}/${month}/${year}`;
+
+      // --- USE OVERLAY_CONFIG ---
+      const { TIMESTAMP, MESSAGE } = OVERLAY_CONFIG;
+
+      // 1. Timestamp
+      const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT);
+      ctx.font = `bold ${tsFontSize}px "Courier New", Courier, monospace`;
+      ctx.fillStyle = '#2c2c2c';
+      ctx.textBaseline = 'top';
+      ctx.textAlign = TIMESTAMP.ALIGN;
+
+      // Calculate X based on alignment
+      let tsX = 0;
+      if (TIMESTAMP.ALIGN === 'right') {
+        tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT) * canvas.width;
+      } else if (TIMESTAMP.ALIGN === 'center') {
+        tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT / 2) * canvas.width;
+      } else {
+        tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
+      }
+      const tsY = TIMESTAMP.TOP_PERCENT * canvas.height;
+
+      ctx.fillText(timestampText, tsX, tsY);
+
+      // 2. Message
+      const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT);
+      ctx.font = `bold ${msgFontSize}px "Courier New", Courier, monospace`;
+      ctx.textAlign = MESSAGE.ALIGN;
+
+      let msgX = 0;
+      if (MESSAGE.ALIGN === 'right') {
+        msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT) * canvas.width;
+      } else if (MESSAGE.ALIGN === 'center') {
+        msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT / 2) * canvas.width;
+      } else {
+        msgX = MESSAGE.LEFT_PERCENT * canvas.width;
+      }
+      const msgY = MESSAGE.TOP_PERCENT * canvas.height;
+
+      const message = customMessage || 'itmedia';
+      ctx.fillText(message, msgX, msgY);
+
+
+    }
+
     const stripBlob = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(blob => {
         if (blob) {
@@ -305,7 +382,7 @@ const MonitorContent = () => {
     });
     const previewUrl = URL.createObjectURL(stripBlob);
     return { stripBlob, previewUrl };
-  }, [rawPhotos, requiredShots, selectedFilter, selectedFrameId, selectedPhotoIndices, isCustomFrame]);
+  }, [rawPhotos, requiredShots, selectedFilter, selectedFrameId, selectedPhotoIndices, isCustomFrame, customMessage]);
 
   const composeVideoRecap = useCallback(async (): Promise<Blob | null> => {
     const available = selectedPhotoIndices
@@ -467,6 +544,55 @@ const MonitorContent = () => {
           ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
         }
 
+        // Draw Overlay Text (Timestamp & Message)
+        if (isCustomFrame) {
+          const now = new Date();
+          const hours = now.getHours().toString().padStart(2, '0');
+          const minutes = now.getMinutes().toString().padStart(2, '0');
+          const day = now.getDate().toString().padStart(2, '0');
+          const month = (now.getMonth() + 1).toString().padStart(2, '0');
+          const year = now.getFullYear();
+          const timestampText = `${hours}h${minutes}, ${day}/${month}/${year}`;
+
+          // Adjust font size for canvas resolution (width 1080)
+          // Original was 55px for 2480w. Now 45px/2480 ~ 1.8%
+          // For 1080w, size ~ 19.5px -> 20px
+          // --- USE OVERLAY_CONFIG ---
+          const { TIMESTAMP, MESSAGE } = OVERLAY_CONFIG;
+
+          // 1. Timestamp
+          const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT);
+          ctx.font = `bold ${tsFontSize}px "Courier New", Courier, monospace`;
+          ctx.fillStyle = '#2c2c2c';
+          ctx.textBaseline = 'top';
+          ctx.textAlign = TIMESTAMP.ALIGN;
+
+          let tsX = 0;
+          if (TIMESTAMP.ALIGN === 'right') {
+            tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT) * canvas.width;
+          } else {
+            tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
+          }
+          const tsY = TIMESTAMP.TOP_PERCENT * canvas.height;
+          ctx.fillText(timestampText, tsX, tsY);
+
+          // 2. Message
+          const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT);
+          ctx.font = `bold ${msgFontSize}px "Courier New", Courier, monospace`;
+          ctx.textAlign = MESSAGE.ALIGN;
+
+          let msgX = 0;
+          if (MESSAGE.ALIGN === 'center') {
+            msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT / 2) * canvas.width;
+          } else {
+            msgX = MESSAGE.LEFT_PERCENT * canvas.width;
+          }
+          const msgY = MESSAGE.TOP_PERCENT * canvas.height;
+
+          const message = customMessage ||'itmedia';
+          ctx.fillText(message, msgX, msgY);
+        }
+
         if (performance.now() - startTime < targetDuration) {
           requestAnimationFrame(drawFrame);
         } else if (recorder.state === 'recording') {
@@ -487,7 +613,7 @@ const MonitorContent = () => {
       console.warn('Không thể ghép video recap', error);
       return clips[0] ?? null;
     }
-  }, [rawVideoClips, requiredShots, selectedFrameId, selectedPhotoIndices, isCustomFrame]);
+  }, [rawVideoClips, requiredShots, selectedFrameId, selectedPhotoIndices, isCustomFrame, customMessage]);
 
   const finishProcessing = useCallback(async () => {
     if (!sessionId || isUploading) return;
@@ -567,9 +693,7 @@ const MonitorContent = () => {
       case 'COMPLETED':
         setStatusMessage('Đã hoàn tất. Quét QR để tải ảnh.');
         break;
-      case 'PREPARE': // New state if needed, or default
-        setStatusMessage('Sẵn sàng...');
-        break;
+
       default:
         setStatusMessage('');
         break;
@@ -605,7 +729,10 @@ const MonitorContent = () => {
             {/* Live Preview Strip */}
             {showPreviewStrip && (
               <div className="relative overflow-hidden rounded-xl bg-white shadow-2xl h-[65vh] w-auto border border-black/10"
-                style={isCustomFrame ? { aspectRatio: '2480/3508' } : { aspectRatio: '1080/1920' }}>
+                style={{
+                  aspectRatio: isCustomFrame ? '2480/3508' : '1080/1920',
+                  containerType: 'inline-size'
+                }}>
                 {isCustomFrame ? (
                   <div className={`relative w-full h-full ${filterClass}`}>
                     {[
@@ -658,6 +785,40 @@ const MonitorContent = () => {
                     className="absolute inset-0 w-full h-full pointer-events-none z-10"
                     alt="frame overlay"
                   />
+                )}
+
+                {/* DOM Overlay Text for Live Preview */}
+                {isCustomFrame && (
+                  <div className="absolute inset-0 pointer-events-none z-20 font-[Courier,monospace] font-bold text-[#2c2c2c]" style={{ lineHeight: 1 }}>
+                    {/* Timestamp */}
+                    <div className="absolute flex items-start justify-end pr-[1%]"
+                      style={{
+                        fontSize: `${OVERLAY_CONFIG.TIMESTAMP.FONT_SIZE_PERCENT * 100}cqh`,
+                        top: `${OVERLAY_CONFIG.TIMESTAMP.TOP_PERCENT * 100}%`,
+                        left: `${OVERLAY_CONFIG.TIMESTAMP.LEFT_PERCENT * 100}%`,
+                        width: `${OVERLAY_CONFIG.TIMESTAMP.WIDTH_PERCENT * 100}%`
+                      }}>
+                      {(() => {
+                        const now = new Date();
+                        const hours = now.getHours().toString().padStart(2, '0');
+                        const minutes = now.getMinutes().toString().padStart(2, '0');
+                        const day = now.getDate().toString().padStart(2, '0');
+                        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                        const year = now.getFullYear();
+                        return `${hours}h${minutes},${day}/${month}/${year}`;
+                      })()}
+                    </div>
+                    {/* Message */}
+                    <div className="absolute flex items-start justify-center text-center"
+                      style={{
+                        fontSize: `${OVERLAY_CONFIG.MESSAGE.FONT_SIZE_PERCENT * 100}cqh`,
+                        top: `${OVERLAY_CONFIG.MESSAGE.TOP_PERCENT * 100}%`,
+                        left: `${OVERLAY_CONFIG.MESSAGE.LEFT_PERCENT * 100}%`,
+                        width: `${OVERLAY_CONFIG.MESSAGE.WIDTH_PERCENT * 100}%`
+                      }}>
+                      {customMessage || 'itmedia'}
+                    </div>
+                  </div>
                 )}
               </div>
             )}

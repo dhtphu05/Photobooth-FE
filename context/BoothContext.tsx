@@ -22,6 +22,7 @@ interface BoothContextType {
   selectedPhotoIndices: number[];
   selectedFrameId: string;
   selectedFilter: string;
+  customMessage: string;
   captureRequestId: string | null;
   isCapturePending: boolean;
   isProcessing: boolean;
@@ -34,6 +35,7 @@ interface BoothContextType {
   confirmSelection: () => void;
   setFrame: (frameId: string) => void;
   setFilter: (filterId: string) => void;
+  setCustomMessage: (message: string) => void;
   setStep: (next: BoothStep) => void;
   setProcessing: (value: boolean) => void;
   resetSession: () => void;
@@ -51,6 +53,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const [capturedCount, setCapturedCount] = useState(0);
   const [selectedFrameId, setSelectedFrameId] = useState('frame-danang');
   const [selectedFilter, setSelectedFilter] = useState('normal');
+  const [customMessage, setCustomMessageState] = useState('');
   const [captureRequestId, setCaptureRequestId] = useState<string | null>(null);
   const captureRequestIdRef = useRef<string | null>(null);
   const [isCapturePending, setIsCapturePending] = useState(false);
@@ -67,6 +70,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
     setSelectedFrameId('frame-bao');
     setSelectedFilter('normal');
+    setCustomMessageState('');
     setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
     setCaptureRequestId(null);
     setIsCapturePending(false);
@@ -245,10 +249,18 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [sessionId]);
 
+  const setCustomMessage = useCallback((message: string) => {
+    setCustomMessageState(message);
+    if (sessionId) {
+      socket.emit('update_config', { sessionId, customMessage: message });
+    }
+  }, [sessionId]);
+
   useEffect(() => {
     const handleUpdate = (payload: {
       selectedFrameId?: string;
       selectedFilter?: string;
+      customMessage?: string;
       timerDuration?: number;
       selectedPhotoIndices?: number[];
       captureRequestId?: string | null;
@@ -258,6 +270,9 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
       }
       if (payload.selectedFilter !== undefined) {
         setSelectedFilter(payload.selectedFilter);
+      }
+      if (payload.customMessage !== undefined) {
+        setCustomMessageState(payload.customMessage);
       }
       if (typeof payload.timerDuration === 'number') {
         setTimerDuration(payload.timerDuration);
@@ -315,6 +330,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     selectedPhotoIndices,
     selectedFrameId,
     selectedFilter,
+    customMessage,
     captureRequestId,
     isCapturePending,
     isProcessing,
@@ -327,6 +343,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     acknowledgeCapture,
     setFrame,
     setFilter,
+    setCustomMessage,
     setStep,
     setProcessing: setIsProcessing,
     resetSession,
@@ -341,6 +358,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     selectedPhotoIndices,
     selectedFrameId,
     selectedFilter,
+    customMessage,
     captureRequestId,
     isCapturePending,
     isProcessing,
@@ -353,6 +371,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     acknowledgeCapture,
     setFrame,
     setFilter,
+    setCustomMessage,
     resetSession,
   ]);
 
