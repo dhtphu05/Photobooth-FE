@@ -50,6 +50,13 @@ const OVERLAY_CONFIG = {
     WIDTH_PERCENT: 0.145,   // Chiều rộng block msg
     FONT_SIZE_PERCENT: 0.011, // Kích thước chữ
     ALIGN: 'center' as CanvasTextAlign,
+  },
+  // --- CẤU HÌNH TINH CHỈNH CHO XUẤT ẢNH/VIDEO (So với Preview) ---
+  EXPORT_CONFIG: {
+    // Dịch xuống một chút so với preview (VD: 0.005 là 0.5%)
+    TOP_OFFSET_PERCENT: 0.005,
+    // Tăng kích thước chữ xuất ra (VD: 1.1 là to hơn 10%)
+    FONT_SCALE: 1.5,
   }
 };
 // --------------------------------------
@@ -328,10 +335,10 @@ const MonitorContent = () => {
       const timestampText = `${hours}h${minutes},${day}/${month}/${year}`;
 
       // --- USE OVERLAY_CONFIG ---
-      const { TIMESTAMP, MESSAGE } = OVERLAY_CONFIG;
+      const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = OVERLAY_CONFIG;
 
       // 1. Timestamp
-      const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT);
+      const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
       ctx.font = `bold ${tsFontSize}px "Courier New", Courier, monospace`;
       ctx.fillStyle = '#2c2c2c';
       ctx.textBaseline = 'top';
@@ -346,12 +353,12 @@ const MonitorContent = () => {
       } else {
         tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
       }
-      const tsY = TIMESTAMP.TOP_PERCENT * canvas.height;
+      const tsY = (TIMESTAMP.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
       ctx.fillText(timestampText, tsX, tsY);
 
       // 2. Message
-      const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT);
+      const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
       ctx.font = `bold ${msgFontSize}px "Courier New", Courier, monospace`;
       ctx.textAlign = MESSAGE.ALIGN;
 
@@ -363,7 +370,7 @@ const MonitorContent = () => {
       } else {
         msgX = MESSAGE.LEFT_PERCENT * canvas.width;
       }
-      const msgY = MESSAGE.TOP_PERCENT * canvas.height;
+      const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
       const message = customMessage || 'itmedia';
       ctx.fillText(message, msgX, msgY);
@@ -558,10 +565,11 @@ const MonitorContent = () => {
           // Original was 55px for 2480w. Now 45px/2480 ~ 1.8%
           // For 1080w, size ~ 19.5px -> 20px
           // --- USE OVERLAY_CONFIG ---
-          const { TIMESTAMP, MESSAGE } = OVERLAY_CONFIG;
+          const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = OVERLAY_CONFIG;
 
           // 1. Timestamp
-          const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT);
+          // Apply FONT_SCALE for export
+          const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
           ctx.font = `bold ${tsFontSize}px "Courier New", Courier, monospace`;
           ctx.fillStyle = '#2c2c2c';
           ctx.textBaseline = 'top';
@@ -570,26 +578,33 @@ const MonitorContent = () => {
           let tsX = 0;
           if (TIMESTAMP.ALIGN === 'right') {
             tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT) * canvas.width;
+          } else if (TIMESTAMP.ALIGN === 'center') {
+            tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT / 2) * canvas.width;
           } else {
             tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
           }
-          const tsY = TIMESTAMP.TOP_PERCENT * canvas.height;
+          // Apply TOP_OFFSET_PERCENT for export
+          const tsY = (TIMESTAMP.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
           ctx.fillText(timestampText, tsX, tsY);
 
           // 2. Message
-          const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT);
+          // Apply FONT_SCALE for export
+          const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
           ctx.font = `bold ${msgFontSize}px "Courier New", Courier, monospace`;
           ctx.textAlign = MESSAGE.ALIGN;
 
           let msgX = 0;
-          if (MESSAGE.ALIGN === 'center') {
+          if (MESSAGE.ALIGN === 'right') {
+            msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT) * canvas.width;
+          } else if (MESSAGE.ALIGN === 'center') {
             msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT / 2) * canvas.width;
           } else {
             msgX = MESSAGE.LEFT_PERCENT * canvas.width;
           }
-          const msgY = MESSAGE.TOP_PERCENT * canvas.height;
+          // Apply TOP_OFFSET_PERCENT for export
+          const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
-          const message = customMessage ||'itmedia';
+          const message = customMessage || 'itmedia';
           ctx.fillText(message, msgX, msgY);
         }
 
