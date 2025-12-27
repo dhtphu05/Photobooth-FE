@@ -172,8 +172,8 @@ const ControllerContent = () => {
             variant={localTimer === option ? 'default' : 'outline'}
             disabled={isProcessing}
             className={`h-32 text-4xl font-bold rounded-2xl transition-all ${localTimer === option
-                ? 'bg-black text-white shadow-xl scale-105 ring-4 ring-gray-200'
-                : 'hover:bg-gray-50 border-2 hover:border-black'
+              ? 'bg-black text-white shadow-xl scale-105 ring-4 ring-gray-200'
+              : 'hover:bg-gray-50 border-2 hover:border-black'
               }`}
           >
             {option}s
@@ -336,15 +336,29 @@ const ControllerContent = () => {
 
         <div className="space-y-4">
           <p className="font-semibold text-lg text-center">Lời nhắn</p>
-          <div className="flex justify-center">
-            <input
-              type="text"
-              value={customMessage}
-              onChange={(e) => setCustomMessage(e.target.value)}
-              placeholder="Nhập tên..."
-              className="w-full max-w-sm rounded-lg border border-gray-300 p-3 text-center text-lg"
-              maxLength={30}
-            />
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative w-full max-w-sm">
+              <input
+                type="text"
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                placeholder="Nhập tên..."
+                className={`w-full rounded-lg border p-3 text-center text-lg transition-colors ${customMessage.length > 10
+                  ? 'border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-200'
+                  : 'border-gray-300 focus:border-black focus:ring-gray-200'
+                  }`}
+                maxLength={30}
+              />
+              <div className={`absolute -bottom-6 right-0 text-sm font-medium ${customMessage.length > 10 ? 'text-red-500' : 'text-gray-400'
+                }`}>
+                {customMessage.length}/10
+              </div>
+            </div>
+            {customMessage.length > 10 && (
+              <p className="text-red-500 text-sm font-medium animate-in fade-in slide-in-from-top-1">
+                Quá giới hạn số từ
+              </p>
+            )}
           </div>
         </div>
 
@@ -365,7 +379,11 @@ const ControllerContent = () => {
           </div>
         </div>
 
-        <Button className="w-full h-16 text-xl font-bold mt-8" onClick={handleFinish} disabled={isProcessing}>
+        <Button
+          className="w-full h-16 text-xl font-bold mt-8"
+          onClick={handleFinish}
+          disabled={isProcessing || customMessage.length > 10}
+        >
           {isProcessing ? (
             <>
               <Loader2 className="w-6 h-6 mr-2 animate-spin" />
