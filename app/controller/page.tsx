@@ -60,8 +60,6 @@ const ControllerContent = () => {
   }, []);
 
   const handleCreateSession = () => {
-    const pendingWindow = window.open('', '_blank');
-    monitorWindow.current = pendingWindow;
     createSession({ data: {} as any }, {
       onSuccess: response => {
         const id = response.data.id;
@@ -69,18 +67,10 @@ const ControllerContent = () => {
           setSessionId(id);
           socket.connect();
           socket.emit('join', id);
-          const targetUrl = `${window.location.origin}/monitor?sessionId=${id}`;
-          if (monitorWindow.current) {
-            monitorWindow.current.location.href = targetUrl;
-          } else {
-            window.open(targetUrl, '_blank');
-          }
         }
       },
       onError: error => {
         console.error('Failed to create session', error);
-        monitorWindow.current?.close();
-        monitorWindow.current = null;
       },
     });
   };
@@ -205,7 +195,7 @@ const ControllerContent = () => {
           <div
             key={index}
             className={`
-              relative rounded-xl overflow-hidden aspect-[3/4] flex items-center justify-center 
+              relative rounded-xl overflow-hidden aspect-video flex items-center justify-center 
               ${preview ? 'bg-black shadow-md' : 'bg-gray-100 border-2 border-dashed border-gray-300'}
             `}
           >
@@ -258,7 +248,7 @@ const ControllerContent = () => {
             <button
               key={index}
               className={`
-                relative rounded-xl overflow-hidden aspect-[3/4] transition-all duration-200
+                relative rounded-xl overflow-hidden aspect-video transition-all duration-200
                 ${selected
                   ? 'ring-4 ring-black shadow-xl scale-[1.02]'
                   : 'ring-1 ring-gray-200 hover:ring-2 hover:ring-gray-300'}
