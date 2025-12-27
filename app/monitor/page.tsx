@@ -299,21 +299,13 @@ const MonitorContent = () => {
             sy = (bitmap.height - sh) / 2;
           }
 
-          ctx.save();
-          ctx.translate(dx + dw, dy);
-          ctx.scale(-1, 1);
-          ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, dw, dh);
-          ctx.restore();
+          ctx.drawImage(bitmap, sx, sy, sw, sh, dx, dy, dw, dh);
         }
       });
     } else {
       const slotHeight = canvas.height / requiredShots;
       bitmaps.forEach((bitmap, index) => {
-        ctx.save();
-        ctx.translate(canvas.width, index * slotHeight);
-        ctx.scale(-1, 1);
-        ctx.drawImage(bitmap, 0, 0, canvas.width, slotHeight);
-        ctx.restore();
+        ctx.drawImage(bitmap, 0, index * slotHeight, canvas.width, slotHeight);
       });
     }
 
