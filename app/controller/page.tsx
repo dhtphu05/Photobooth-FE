@@ -11,9 +11,9 @@ import { BoothProvider, useBooth } from '@/context/BoothContext';
 
 const TIMER_OPTIONS = [5, 7, 10];
 const FRAME_OPTIONS = [
-  { id: 'frame-1', label: 'Classic' },
-  { id: 'frame-bao', label: 'Báo' },
-  { id: 'frame-thanh-xuan', label: 'Thanh Xuân' },
+  { id: 'frame-danang', label: 'Đà Nẵng', image: '/FRAME-ĐÀ-NẴNG.png' },
+  { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/FRAME-BÁO-XUÂN.png' },
+  { id: 'frame-chuyen-tau', label: 'Chuyển tàu', image: '/FRAME-CHUYẾN-TÀU-THANH-XUÂN.png' },
 ];
 const FILTER_OPTIONS = [
   { id: 'normal', label: 'Original' },
@@ -233,41 +233,71 @@ const ControllerContent = () => {
     </div>
   );
 
-  const renderReviewStep = () => (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <p className="font-semibold">Frame</p>
-        <div className="flex gap-3 flex-wrap">
-          {FRAME_OPTIONS.map(frame => (
-            <Button
-              key={frame.id}
-              variant={selectedFrameId === frame.id ? 'default' : 'outline'}
-              onClick={() => handleFrameChange(frame.id)}
-            >
-              {frame.label}
-            </Button>
-          ))}
+  const renderReviewStep = () => {
+    return (
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <p className="font-semibold text-lg text-center">Chọn Frame</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {FRAME_OPTIONS.map(frame => (
+              <button
+                key={frame.id}
+                onClick={() => handleFrameChange(frame.id)}
+                className={`relative group rounded-xl overflow-hidden aspect-[2480/3508] transition-all duration-200 ${selectedFrameId === frame.id
+                  ? 'ring-4 ring-black shadow-xl scale-[1.02]'
+                  : 'ring-1 ring-gray-200 hover:ring-2 hover:ring-gray-300'
+                  }`}
+              >
+                <img
+                  src={frame.image}
+                  alt={frame.label}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white py-2 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  {frame.label}
+                </div>
+                {selectedFrameId === frame.id && (
+                  <div className="absolute top-2 right-2 bg-black text-white rounded-full p-1 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="space-y-2">
-        <p className="font-semibold">Filter</p>
-        <div className="flex gap-3 flex-wrap">
-          {FILTER_OPTIONS.map(filter => (
-            <Button
-              key={filter.id}
-              variant={selectedFilter === filter.id ? 'default' : 'outline'}
-              onClick={() => handleFilterChange(filter.id)}
-            >
-              {filter.label}
-            </Button>
-          ))}
+
+        <div className="space-y-4">
+          <p className="font-semibold text-lg text-center">Chọn Bộ Lọc</p>
+          <div className="flex justify-center gap-4 flex-wrap">
+            {FILTER_OPTIONS.map(filter => (
+              <Button
+                key={filter.id}
+                variant={selectedFilter === filter.id ? 'default' : 'outline'}
+                onClick={() => handleFilterChange(filter.id)}
+                size="lg"
+                className="min-w-[120px]"
+              >
+                {filter.label}
+              </Button>
+            ))}
+          </div>
         </div>
+
+        <Button className="w-full h-16 text-xl font-bold mt-8" onClick={handleFinish} disabled={isProcessing}>
+          {isProcessing ? (
+            <>
+              <Loader2 className="w-6 h-6 mr-2 animate-spin" />
+              Đang xử lý...
+            </>
+          ) : (
+            'Hoàn thành / In ảnh'
+          )}
+        </Button>
       </div>
-      <Button className="w-full h-14 text-lg font-semibold" onClick={handleFinish} disabled={isProcessing}>
-        {isProcessing ? 'Uploading...' : 'Finish / Print'}
-      </Button>
-    </div>
-  );
+    );
+  };
 
   const renderCompletedStep = () => (
     <div className="space-y-4 text-center">
@@ -314,7 +344,7 @@ const ControllerContent = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <Card className="w-full max-w-2xl">
+      <Card className="w-full max-w-5xl">
         <CardHeader>
           <CardTitle className="text-center">Photobooth Controller</CardTitle>
         </CardHeader>

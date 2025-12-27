@@ -16,6 +16,9 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-3': null,
   'frame-bao': '/frame-bao.png',
   'frame-thanh-xuan': '/frame-thanh-xuan.png',
+  'frame-danang': '/frame-ĐÀ-NẴNG.png',
+  'frame-bao-xuan': '/frame-BÁO-XUÂN.png',
+  'frame-chuyen-tau': '/frame-CHUYẾN-TÀU-THANH-XUÂN.png',
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -206,7 +209,7 @@ const MonitorContent = () => {
 
   const filterClass = FILTER_CLASS_MAP[selectedFilter] ?? '';
 
-  const isCustomFrame = ['frame-bao', 'frame-thanh-xuan'].includes(selectedFrameId);
+  const isCustomFrame = ['frame-bao', 'frame-thanh-xuan', 'frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau'].includes(selectedFrameId);
 
   const composeStripImage = useCallback(async () => {
     const selectedBlobs = selectedPhotoIndices
@@ -243,7 +246,7 @@ const MonitorContent = () => {
       // Shared slots for both frame-bao and frame-thanh-xuan for now
       const slots = [
         { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
-        { x: 0.038, y: 0.585, w: 0.445, h: 0.175 },
+        { x: 0.038, y: 0.580, w: 0.445, h: 0.175 },
         { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
       ];
 
@@ -425,7 +428,7 @@ const MonitorContent = () => {
         if (isCustomFrame) {
           const slots = [
             { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
-            { x: 0.038, y: 0.585, w: 0.445, h: 0.175 },
+            { x: 0.038, y: 0.575, w: 0.445, h: 0.175 },
             { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
           ];
           slots.forEach((slot, index) => {
@@ -607,7 +610,7 @@ const MonitorContent = () => {
                   <div className={`relative w-full h-full ${filterClass}`}>
                     {[
                       { top: '19.5%', left: '3.8%', width: '92.4%', height: '36.5%' },
-                      { top: '58.5%', left: '3.8%', width: '44.5%', height: '17.5%' },
+                      { top: '57.5%', left: '3.8%', width: '44.5%', height: '17.5%' },
                       { top: '77.0%', left: '51.5%', width: '44.5%', height: '17.5%' },
                     ].map((slot, index) => (
                       <div
