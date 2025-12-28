@@ -86,7 +86,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
     setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
     if (sessionId) {
-      socket.emit('update_config', { sessionId, timerDuration: seconds });
+      socket.emit('update_config', { sessionId, timerDuration: seconds, reset: true });
     }
   }, [sessionId]);
 
@@ -218,7 +218,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
         if (prev.length >= REQUIRED_SHOTS) {
           return prev;
         }
-        updated = [...prev, index].sort((a, b) => a - b);
+        updated = [...prev, index];
       }
       if (sessionId) {
         socket.emit('update_config', { sessionId, selectedPhotoIndices: updated });
@@ -231,7 +231,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     if (selectedPhotoIndices.length !== REQUIRED_SHOTS) return;
     setStep('REVIEW');
     if (sessionId) {
-      socket.emit('update_config', { sessionId, selectedPhotoIndices });
+      socket.emit('update_config', { sessionId, selectedPhotoIndices, step: 'REVIEW' });
     }
   }, [selectedPhotoIndices, sessionId]);
 
@@ -264,6 +264,8 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
       timerDuration?: number;
       selectedPhotoIndices?: number[];
       captureRequestId?: string | null;
+      step?: string;
+      reset?: boolean;
     }) => {
       if (payload.selectedFrameId !== undefined) {
         setSelectedFrameId(payload.selectedFrameId);
@@ -276,6 +278,8 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
       }
       if (typeof payload.timerDuration === 'number') {
         setTimerDuration(payload.timerDuration);
+      }
+      if (payload.reset) {
         setCapturedCount(0);
         setRawPhotos(Array(TOTAL_SHOTS).fill(null));
         setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
@@ -285,9 +289,9 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
       }
       if (payload.selectedPhotoIndices !== undefined) {
         setSelectedPhotoIndices(payload.selectedPhotoIndices);
-        if (payload.selectedPhotoIndices.length === REQUIRED_SHOTS) {
-          setStep('REVIEW');
-        }
+      }
+      if (payload.step) {
+        setStep(payload.step as BoothStep);
       }
       if ('captureRequestId' in payload) {
         const nextRequestId = payload.captureRequestId ?? null;

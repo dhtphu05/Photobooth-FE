@@ -6,6 +6,8 @@ type UpdateConfigPayload = {
     selectedPhotoIndices?: number[];
     customMessage?: string;
     captureRequestId?: string | null;
+    step?: string;
+    reset?: boolean;
 };
 
 type ServerConfigBroadcast = Omit<UpdateConfigPayload, 'sessionId'>;

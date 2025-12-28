@@ -130,10 +130,13 @@ const MonitorContent = () => {
     const mediaStream = (videoElement?.srcObject as MediaStream | null) ?? null;
     if (!mediaStream) return;
     try {
-      const recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm;codecs=vp9' });
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9'
+        : 'video/webm';
+      const recorder = new MediaRecorder(mediaStream, { mimeType });
       clipChunksRef.current = [];
       recorder.ondataavailable = event => {
-        if (event.data?.size) {
+        if (event.data?.size > 0) {
           clipChunksRef.current.push(event.data);
         }
       };
@@ -473,10 +476,13 @@ const MonitorContent = () => {
         return clips[0] ?? null;
       }
       const stream = canvas.captureStream(30);
-      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9'
+        : 'video/webm';
+      const recorder = new MediaRecorder(stream, { mimeType });
       const chunks: Blob[] = [];
       recorder.ondataavailable = event => {
-        if (event.data?.size) {
+        if (event.data?.size > 0) {
           chunks.push(event.data);
         }
       };
@@ -494,10 +500,13 @@ const MonitorContent = () => {
 
       recorder.start();
 
-      const durations = videos.map(video =>
-        Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 3,
-      );
-      const targetDuration = Math.max(...durations, 3) * 2 * 1000;
+      const durations = videos.map(video => {
+        const d = video.duration;
+        return (Number.isFinite(d) && d > 1.5) ? d : 5;
+      });
+      // Enforce minimum 5s per loop (10s total) to prevent short videos
+      const baseDuration = Math.max(...durations, 5);
+      const targetDuration = baseDuration * 2 * 1000;
 
       const startTime = performance.now();
 
