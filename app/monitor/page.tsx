@@ -14,8 +14,8 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-1': 'https://cdn.freehihi.com/68fdab4e38d77.png',
   'frame-2': null,
   'frame-3': null,
-  'frame-bao': '/frame-bao.png',
-  'frame-thanh-xuan': '/frame-thanh-xuan.png',
+
+
   'frame-danang': '/frame-da-nang.png',
   'frame-bao-xuan': '/frame-bao-xuan.png',
   'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
@@ -238,7 +238,7 @@ const MonitorContent = () => {
 
   const filterClass = FILTER_CLASS_MAP[selectedFilter] ?? '';
 
-  const isCustomFrame = ['frame-bao', 'frame-thanh-xuan', 'frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau'].includes(selectedFrameId);
+  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau'].includes(selectedFrameId);
 
   const composeStripImage = useCallback(async () => {
     const selectedBlobs = selectedPhotoIndices
@@ -505,10 +505,7 @@ const MonitorContent = () => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // For opaque frame (Thanh Xuan), draw it as background first
-        if (overlayImage && selectedFrameId === 'frame-thanh-xuan') {
-          ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
-        }
+
 
         if (isCustomFrame) {
           const slots = [
@@ -557,7 +554,8 @@ const MonitorContent = () => {
         }
 
         // For standard transparent frames, draw overlay on top
-        if (overlayImage && selectedFrameId !== 'frame-thanh-xuan') {
+        // For standard transparent frames, draw overlay on top
+        if (overlayImage) {
           ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
         }
 

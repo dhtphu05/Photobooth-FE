@@ -342,8 +342,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                         <CardContent className="space-y-6 flex-1 flex flex-col justify-center">
                             {hasVideos ? (
                                 <>
-                                    <div className="relative w-fit mx-auto overflow-hidden rounded-xl bg-black shadow-lg"
-                                        style={(session?.selectedFrame === 'frame-bao' || session?.selectedFrame === 'frame-thanh-xuan') ? { aspectRatio: '2480/3508' } : undefined}>
+                                    <div className="relative w-fit mx-auto overflow-hidden rounded-xl bg-black shadow-lg">
                                         <div className="relative z-0 flex flex-col h-full items-center justify-center">
                                             <video
                                                 ref={(element) => {

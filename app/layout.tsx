@@ -9,7 +9,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "PhotoXinhh - Y2K Photobooth",
+  title: "Photobooth-XuanTinhNguyen26-fromlcdkhoacnttwithluv",
   description: "Create stunning Y2K-style photobooth memories with filters, frames, and instant sharing",
   generator: "v0.app",
   icons: {
