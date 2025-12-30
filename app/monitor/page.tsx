@@ -31,11 +31,15 @@ const CANVAS_FILTER_MAP: Record<string, string> = {
   normal: 'none',
   bw: 'grayscale(1)',
   sepia: 'sepia(1)',
-  bw: 'grayscale(1)',
-  sepia: 'sepia(1)',
 };
 
 // --- CONFIGURATION FOR OVERLAY TEXT ---
+const FRAME_TEXT_COLORS: Record<string, string> = {
+  'frame-danang': '#a40000',
+  'frame-bao-xuan': '#4e6f39',
+  'frame-chuyen-tau': '#966725',
+};
+
 const OVERLAY_CONFIG = {
   TIMESTAMP: {
     TOP_PERCENT: 0.165,      // Dịch chuyển lên/xuống (0.0 - 1.0)
@@ -85,7 +89,7 @@ const MonitorContent = () => {
   } = useBooth();
 
   const webcamRef = useRef<Webcam>(null);
-  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | number | null>(null);
   const lastCaptureIdRef = useRef<string | null>(null);
   const clipRecorderRef = useRef<MediaRecorder | null>(null);
   const clipChunksRef = useRef<Blob[]>([]);
@@ -340,11 +344,12 @@ const MonitorContent = () => {
 
       // --- USE OVERLAY_CONFIG ---
       const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = OVERLAY_CONFIG;
+      const textColor = FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c';
 
       // 1. Timestamp
       const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
       ctx.font = `bold ${tsFontSize}px "Courier New", Courier, monospace`;
-      ctx.fillStyle = '#2c2c2c';
+      ctx.fillStyle = textColor;
       ctx.textBaseline = 'top';
       ctx.textAlign = TIMESTAMP.ALIGN;
 
@@ -583,12 +588,13 @@ const MonitorContent = () => {
           // For 1080w, size ~ 19.5px -> 20px
           // --- USE OVERLAY_CONFIG ---
           const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = OVERLAY_CONFIG;
+          const textColor = FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c';
 
           // 1. Timestamp
           // Apply FONT_SCALE for export
           const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
           ctx.font = `bold ${tsFontSize}px "Courier New", Courier, monospace`;
-          ctx.fillStyle = '#2c2c2c';
+          ctx.fillStyle = textColor;
           ctx.textBaseline = 'top';
           ctx.textAlign = TIMESTAMP.ALIGN;
 
@@ -821,7 +827,7 @@ const MonitorContent = () => {
 
                 {/* DOM Overlay Text for Live Preview */}
                 {isCustomFrame && (
-                  <div className="absolute inset-0 pointer-events-none z-20 font-[Courier,monospace] font-bold text-[#2c2c2c]" style={{ lineHeight: 1 }}>
+                  <div className="absolute inset-0 pointer-events-none z-20 font-[Courier,monospace] font-bold" style={{ lineHeight: 1, color: FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c' }}>
                     {/* Timestamp */}
                     <div className="absolute flex items-start justify-end pr-[1%]"
                       style={{
