@@ -44,7 +44,61 @@ import type {
 
 
 
-/**
+export const sessionsControllerConvertVideo = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<void>> => {
+    
+    
+    return axios.post(
+      `/api/sessions/convert`,undefined,options
+    );
+  }
+
+
+
+export const getSessionsControllerConvertVideoMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sessionsControllerConvertVideo>>, TError,void, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof sessionsControllerConvertVideo>>, TError,void, TContext> => {
+
+const mutationKey = ['sessionsControllerConvertVideo'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sessionsControllerConvertVideo>>, void> = () => {
+          
+
+          return  sessionsControllerConvertVideo(axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SessionsControllerConvertVideoMutationResult = NonNullable<Awaited<ReturnType<typeof sessionsControllerConvertVideo>>>
+    
+    export type SessionsControllerConvertVideoMutationError = AxiosError<unknown>
+
+    export const useSessionsControllerConvertVideo = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sessionsControllerConvertVideo>>, TError,void, TContext>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sessionsControllerConvertVideo>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getSessionsControllerConvertVideoMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * @summary Create a new session
  */
 export const createSession = (
@@ -348,6 +402,66 @@ export function useGetSession<TData = Awaited<ReturnType<typeof getSession>>, TE
 
 
 /**
+ * @summary Delete a session
+ */
+export const deleteSession = (
+    id: string, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<void>> => {
+    
+    
+    return axios.delete(
+      `/api/sessions/${id}`,options
+    );
+  }
+
+
+
+export const getDeleteSessionMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSession>>, TError,{id: string}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSession>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteSession'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSession>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteSession(id,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSessionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSession>>>
+    
+    export type DeleteSessionMutationError = AxiosError<unknown>
+
+    /**
+ * @summary Delete a session
+ */
+export const useDeleteSession = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSession>>, TError,{id: string}, TContext>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSession>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteSessionMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * @summary Mark a session as completed
  */
 export const completeSession = (
@@ -476,4 +590,273 @@ export const useUploadSessionMedia = <TError = AxiosError<unknown>,
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * @summary Get overview statistics
+ */
+export const getOverviewStats = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<void>> => {
     
+    
+    return axios.get(
+      `/api/sessions/stats/overview`,options
+    );
+  }
+
+
+
+
+export const getGetOverviewStatsQueryKey = () => {
+    return [
+    `/api/sessions/stats/overview`
+    ] as const;
+    }
+
+    
+export const getGetOverviewStatsQueryOptions = <TData = Awaited<ReturnType<typeof getOverviewStats>>, TError = AxiosError<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOverviewStats>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOverviewStatsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOverviewStats>>> = ({ signal }) => getOverviewStats({ signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOverviewStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetOverviewStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getOverviewStats>>>
+export type GetOverviewStatsQueryError = AxiosError<unknown>
+
+
+export function useGetOverviewStats<TData = Awaited<ReturnType<typeof getOverviewStats>>, TError = AxiosError<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOverviewStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getOverviewStats>>,
+          TError,
+          Awaited<ReturnType<typeof getOverviewStats>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetOverviewStats<TData = Awaited<ReturnType<typeof getOverviewStats>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOverviewStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getOverviewStats>>,
+          TError,
+          Awaited<ReturnType<typeof getOverviewStats>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetOverviewStats<TData = Awaited<ReturnType<typeof getOverviewStats>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOverviewStats>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get overview statistics
+ */
+
+export function useGetOverviewStats<TData = Awaited<ReturnType<typeof getOverviewStats>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOverviewStats>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetOverviewStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Get daily statistics
+ */
+export const getDailyStats = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<void>> => {
+    
+    
+    return axios.get(
+      `/api/sessions/stats/daily`,options
+    );
+  }
+
+
+
+
+export const getGetDailyStatsQueryKey = () => {
+    return [
+    `/api/sessions/stats/daily`
+    ] as const;
+    }
+
+    
+export const getGetDailyStatsQueryOptions = <TData = Awaited<ReturnType<typeof getDailyStats>>, TError = AxiosError<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyStats>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDailyStatsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDailyStats>>> = ({ signal }) => getDailyStats({ signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDailyStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetDailyStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getDailyStats>>>
+export type GetDailyStatsQueryError = AxiosError<unknown>
+
+
+export function useGetDailyStats<TData = Awaited<ReturnType<typeof getDailyStats>>, TError = AxiosError<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyStats>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyStats>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDailyStats<TData = Awaited<ReturnType<typeof getDailyStats>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyStats>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyStats>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDailyStats<TData = Awaited<ReturnType<typeof getDailyStats>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyStats>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get daily statistics
+ */
+
+export function useGetDailyStats<TData = Awaited<ReturnType<typeof getDailyStats>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyStats>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetDailyStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Get hourly statistics
+ */
+export const getHourlyStats = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<void>> => {
+    
+    
+    return axios.get(
+      `/api/sessions/stats/hourly`,options
+    );
+  }
+
+
+
+
+export const getGetHourlyStatsQueryKey = () => {
+    return [
+    `/api/sessions/stats/hourly`
+    ] as const;
+    }
+
+    
+export const getGetHourlyStatsQueryOptions = <TData = Awaited<ReturnType<typeof getHourlyStats>>, TError = AxiosError<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHourlyStats>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHourlyStatsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHourlyStats>>> = ({ signal }) => getHourlyStats({ signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHourlyStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetHourlyStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getHourlyStats>>>
+export type GetHourlyStatsQueryError = AxiosError<unknown>
+
+
+export function useGetHourlyStats<TData = Awaited<ReturnType<typeof getHourlyStats>>, TError = AxiosError<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHourlyStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHourlyStats>>,
+          TError,
+          Awaited<ReturnType<typeof getHourlyStats>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHourlyStats<TData = Awaited<ReturnType<typeof getHourlyStats>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHourlyStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHourlyStats>>,
+          TError,
+          Awaited<ReturnType<typeof getHourlyStats>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHourlyStats<TData = Awaited<ReturnType<typeof getHourlyStats>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHourlyStats>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get hourly statistics
+ */
+
+export function useGetHourlyStats<TData = Awaited<ReturnType<typeof getHourlyStats>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHourlyStats>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetHourlyStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+

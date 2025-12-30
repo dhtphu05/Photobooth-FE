@@ -13,4 +13,6 @@ export interface UpdateSessionDto {
   selectedFilter?: string;
   /** Selected frame identifier */
   selectedFrame?: string;
+  /** Whether the session output is mirrored */
+  isMirrored?: boolean;
 }
