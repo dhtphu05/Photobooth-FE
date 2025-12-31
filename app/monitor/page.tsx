@@ -20,9 +20,9 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-bao-xuan': '/frame-bao-xuan.png',
   'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
   'frame-final-1': '/frame-final-1.png',
-  'frame-cuoi-1':'/frame-cuoi-1.png',
-  'frame-cuoi-2':'/frame-cuoi-2.png',
-  'frame-cuoi-3':'/frame-cuoi-3.png',
+  'frame-cuoi-1': '/frame-cuoi-1.png',
+  'frame-cuoi-2': '/frame-cuoi-2.png',
+  'frame-cuoi-3': '/frame-cuoi-3.png',
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -43,9 +43,9 @@ const FRAME_TEXT_COLORS: Record<string, string> = {
   'frame-bao-xuan': '#4e6f39',
   'frame-chuyen-tau': '#966725',
   'frame-final-1': '#000000',
-  'frame-cuoi-1':'#a40000',
-  'frame-cuoi-2':'#e4f407ff',
-  'frame-cuoi-3':'#ffffffff',
+  'frame-cuoi-1': '#a40000',
+  'frame-cuoi-2': '#e4f407ff',
+  'frame-cuoi-3': '#ffffffff',
 };
 
 const OVERLAY_CONFIG = {
@@ -446,11 +446,34 @@ const MonitorContent = () => {
         try {
           const signatureImg = await loadImage(currentSignature);
 
-          // DEBUG: Force draw full screen to ensure visibility (ruling out coordinate issues)
-          // ctx.drawImage(signatureImg, sigX, sigY, sigW, sigH); // Old Logic
-          ctx.drawImage(signatureImg, 0, 0, canvas.width, canvas.height);
+          // Update position based on User Analysis (Bottom Left Slot)
+          // Tọa độ (left, top): 3.8% W, 77.0% H
+          // Kích thước (width, height): 44.5% W, 17.5% H
+          const sigX = canvas.width * 0.038;
+          const sigY = canvas.height * 0.770;
+          const sigW = canvas.width * 0.445;
+          const sigH = canvas.height * 0.175;
 
-          console.log('✅ Drawn signature on canvas (Full Screen Debug via Ref)');
+          // Preserve aspect ratio (contain) in strip image
+          const srcRatio = signatureImg.width / signatureImg.height;
+          const dstRatio = sigW / sigH;
+
+          let drawW = sigW;
+          let drawH = sigH;
+          let drawX = sigX;
+          let drawY = sigY;
+
+          if (srcRatio > dstRatio) {
+            drawH = sigW / srcRatio;
+            drawY = sigY + (sigH - drawH) / 2;
+          } else {
+            drawW = sigH * srcRatio;
+            drawX = sigX + (sigW - drawW) / 2;
+          }
+
+          ctx.drawImage(signatureImg, drawX, drawY, drawW, drawH);
+
+          console.log('✅ Drawn signature on canvas (Bottom Left Slot via Ref)');
         } catch (e) {
           console.warn('Failed to draw signature', e);
         }
@@ -716,15 +739,31 @@ const MonitorContent = () => {
           ctx.fillText(message, msgX, msgY);
 
           // 3. Signature
-          // 3. Signature
           if (signatureImage) {
-            const sigW = canvas.width * 0.3;
-            const sigH = sigW * (300 / 500);
+            // Update position based on User Analysis (Bottom Left Slot)
+            const sigX = canvas.width * 0.038;
+            const sigY = canvas.height * 0.770;
+            const sigW = canvas.width * 0.445;
+            const sigH = canvas.height * 0.175;
 
-            const sigX = canvas.width - sigW - (canvas.width * 0.05);
-            const sigY = canvas.height - sigH - (canvas.height * 0.05);
+            // Preserve aspect ratio (contain)
+            const srcRatio = signatureImage.width / signatureImage.height;
+            const dstRatio = sigW / sigH;
 
-            ctx.drawImage(signatureImage, sigX, sigY, sigW, sigH);
+            let drawW = sigW;
+            let drawH = sigH;
+            let drawX = sigX;
+            let drawY = sigY;
+
+            if (srcRatio > dstRatio) {
+              drawH = sigW / srcRatio;
+              drawY = sigY + (sigH - drawH) / 2;
+            } else {
+              drawW = sigH * srcRatio;
+              drawX = sigX + (sigW - drawW) / 2;
+            }
+
+            ctx.drawImage(signatureImage, drawX, drawY, drawW, drawH);
           }
         }
 

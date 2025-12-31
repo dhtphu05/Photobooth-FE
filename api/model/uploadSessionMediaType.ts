@@ -14,6 +14,4 @@ export const UploadSessionMediaType = {
   ORIGINAL: 'ORIGINAL',
   PROCESSED: 'PROCESSED',
   VIDEO: 'VIDEO',
-  SIGNATURE: 'SIGNATURE',
 } as const;
-
