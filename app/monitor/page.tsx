@@ -20,6 +20,9 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-bao-xuan': '/frame-bao-xuan.png',
   'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
   'frame-final-1': '/frame-final-1.png',
+  'frame-cuoi-1':'/frame-cuoi-1.png',
+  'frame-cuoi-2':'/frame-cuoi-2.png',
+  'frame-cuoi-3':'/frame-cuoi-3.png',
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -40,6 +43,9 @@ const FRAME_TEXT_COLORS: Record<string, string> = {
   'frame-bao-xuan': '#4e6f39',
   'frame-chuyen-tau': '#966725',
   'frame-final-1': '#000000',
+  'frame-cuoi-1':'#a40000',
+  'frame-cuoi-2':'#e4f407ff',
+  'frame-cuoi-3':'#ffffffff',
 };
 
 const OVERLAY_CONFIG = {
@@ -288,7 +294,7 @@ const MonitorContent = () => {
 
   const filterClass = FILTER_CLASS_MAP[selectedFilter] ?? '';
 
-  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1'].includes(selectedFrameId);
+  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3'].includes(selectedFrameId);
 
   const composeStripImage = useCallback(async () => {
     const selectedBlobs = selectedPhotoIndices
@@ -534,15 +540,12 @@ const MonitorContent = () => {
       }
 
       let signatureImage: HTMLImageElement | null = null;
-      if (signatureData) {
+      // FIX: Use Ref to avoid stale closure in video generation
+      const currentSignature = signatureDataRef.current;
+      if (currentSignature) {
         try {
-          const img = new Image();
-          img.src = signatureData;
-          await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = reject;
-          });
-          signatureImage = img;
+          signatureImage = await loadImage(currentSignature);
+          console.log('✅ Loaded signature for video (via Ref)');
         } catch (e) {
           console.warn('Signature load failed for video', e);
         }
