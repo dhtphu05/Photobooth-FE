@@ -13,7 +13,11 @@ interface SigningStepProps {
 const PEN_COLORS = [
     { id: 'black', value: '#000000', label: 'Black' },
     { id: 'white', value: '#ffffff', label: 'White' },
+    { id: 'neon-red', value: '#ff0000', label: 'Red' },
+    { id: 'neon-yellow', value: '#ffea00', label: 'Yellow' },
+    { id: 'neon-orange', value: '#ff9900', label: 'Orange' },
     { id: 'neon-pink', value: '#ff0099', label: 'Pink' },
+    { id: 'neon-purple', value: '#cc00ff', label: 'Purple' },
     { id: 'neon-blue', value: '#00f3ff', label: 'Blue' },
     { id: 'neon-green', value: '#0aff00', label: 'Green' },
 ];
