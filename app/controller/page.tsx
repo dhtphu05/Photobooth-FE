@@ -14,6 +14,7 @@ const FRAME_OPTIONS = [
   { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang.png' },
   { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/frame-bao-xuan.png' },
   { id: 'frame-chuyen-tau', label: 'Chuyến tàu', image: '/frame-chuyen-tau-thanh-xuan.png' },
+  { id: 'frame-final-1', label: 'Final 1', image: '/frame-final-1.png' },
 ];
 const FILTER_OPTIONS = [
   { id: 'normal', label: 'Original' },
@@ -295,7 +296,15 @@ const ControllerContent = () => {
         <div className="space-y-4">
           <p className="font-semibold text-lg text-center">Chọn Frame</p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {FRAME_OPTIONS.map(frame => (
+            {FRAME_OPTIONS.filter(frame => {
+              if (frame.id === 'frame-final-1') {
+                const now = new Date();
+                const startTime = new Date('2025-12-31T09:40:00+07:00');
+                const endTime = new Date('2025-12-31T11:45:00+07:00');
+                return now >= startTime && now <= endTime;
+              }
+              return true;
+            }).map(frame => (
               <button
                 key={frame.id}
                 onClick={() => handleFrameChange(frame.id)}
