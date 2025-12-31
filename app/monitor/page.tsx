@@ -65,6 +65,17 @@ const OVERLAY_CONFIG = {
     FONT_SCALE: 1.5,
   }
 };
+
+// Helper: Load Image safely via HTMLImageElement (Compatible with Base64 & CORS)
+const loadImage = (src: string): Promise<HTMLImageElement> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous'; // Good practice
+    img.onload = () => resolve(img);
+    img.onerror = (e) => reject(e);
+    img.src = src;
+  });
+};
 // --------------------------------------
 
 const MonitorContent = () => {
@@ -104,6 +115,33 @@ const MonitorContent = () => {
   const [finalPreviewUrl, setFinalPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Use a Ref to track signature data to avoid stale closures in async callbacks
+  // update: Listen directly to socket for fastest update, bypassing React state cycle
+  const signatureDataRef = useRef<string | null>(signatureData);
+
+  useEffect(() => {
+    // Sync ref with context state (for initial load or if context updates first)
+    if (signatureData) {
+      signatureDataRef.current = signatureData;
+    }
+  }, [signatureData]);
+
+  useEffect(() => {
+    // Direct listener to catch the event BEFORE the finish processing trigger fires
+    // This races against the Context update, but ensures Ref is populated instantly
+    const handleDirectSignature = (payload: { signatureImage: string }) => {
+      if (payload?.signatureImage) {
+        console.log('⚡️ Monitor Direct Socket: Received Signature -> Updating Ref Immediately');
+        signatureDataRef.current = payload.signatureImage;
+      }
+    };
+
+    socket.on('sync_signature', handleDirectSignature);
+    return () => {
+      socket.off('sync_signature', handleDirectSignature);
+    };
+  }, []);
 
   useEffect(() => {
     const id = searchParams.get('sessionId');
@@ -390,24 +428,28 @@ const MonitorContent = () => {
       ctx.fillText(message, msgX, msgY);
 
       // 3. Signature
-      if (signatureData) {
+      // Use Ref to avoid stale closure (Bắt buộc dùng Ref để tránh hàm chạy với giá trị cũ)
+      const currentSignature = signatureDataRef.current;
+      console.log('🔍 composeStripImage Check:', {
+        stateSig: signatureData ? 'Has Data' : 'NULL',
+        refSig: currentSignature ? 'Has Data' : 'NULL'
+      });
+
+      if (currentSignature) {
+        console.log("Signature Data (From Ref) nhận được:", currentSignature.substring(0, 50) + "...");
         try {
-          const sigBlob = await fetch(signatureData).then(res => res.blob());
-          const sigBitmap = await createImageBitmap(sigBlob);
+          const signatureImg = await loadImage(currentSignature);
 
-          // Let's define a fixed box for signature
-          const sigW = canvas.width * 0.3; // 30% width
-          const sigH = sigW * (300 / 500); // Maintain aspect ratio of controller canvas (500x300)
+          // DEBUG: Force draw full screen to ensure visibility (ruling out coordinate issues)
+          // ctx.drawImage(signatureImg, sigX, sigY, sigW, sigH); // Old Logic
+          ctx.drawImage(signatureImg, 0, 0, canvas.width, canvas.height);
 
-          const sigX = canvas.width - sigW - (canvas.width * 0.05); // 5% padding from right
-          const sigY = canvas.height - sigH - (canvas.height * 0.05); // 5% padding from bottom
-
-          ctx.drawImage(sigBitmap, sigX, sigY, sigW, sigH);
-          sigBitmap.close();
-          console.log('✅ Drawn signature on canvas');
+          console.log('✅ Drawn signature on canvas (Full Screen Debug via Ref)');
         } catch (e) {
           console.warn('Failed to draw signature', e);
         }
+      } else {
+        console.warn('⚠️ composeStripImage: Ref is NULL (Missing signature data)');
       }
     }
 
@@ -707,10 +749,9 @@ const MonitorContent = () => {
 
 
   const finishProcessing = useCallback(async () => {
-    if (!sessionId || isUploading) return;
     setUploadError(null);
     setIsUploading(true);
-    setStatusMessage('Đang xử lý & upload...');
+    setStatusMessage('Đang xử lý & upload (V2 fix)...');
     socket.emit('processing_start', sessionId);
     try {
       const { stripBlob, previewUrl } = await composeStripImage();
