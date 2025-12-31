@@ -13,6 +13,8 @@ export interface UpdateSessionDto {
   selectedFilter?: string;
   /** Selected frame identifier */
   selectedFrame?: string;
+  /** Signature image data (Base64) */
+  signatureImage?: string;
   /** Whether the session output is mirrored */
   isMirrored?: boolean;
 }

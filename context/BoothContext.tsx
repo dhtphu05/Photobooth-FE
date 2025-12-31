@@ -6,7 +6,7 @@ import { socket } from '@/lib/socket';
 const TOTAL_SHOTS = 6;
 const REQUIRED_SHOTS = 3;
 
-export type BoothStep = 'CONFIG' | 'CAPTURE' | 'SELECTION' | 'REVIEW' | 'COMPLETED';
+export type BoothStep = 'CONFIG' | 'CAPTURE' | 'SELECTION' | 'REVIEW' | 'SIGNING' | 'COMPLETED';
 
 interface BoothContextType {
   sessionId: string | null;
@@ -28,6 +28,9 @@ interface BoothContextType {
   isProcessing: boolean;
   setTimer: (seconds: number) => void;
   takeShot: () => void;
+  signatureData: string | null;
+  setSignatureData: (data: string | null) => void;
+
   acknowledgeCapture: () => void;
   registerCapturedPhoto: (blob: Blob, previewUrl: string, clip?: Blob | null) => void;
   receiveRemotePhoto: (previewUrl: string, slot?: number) => void;
@@ -75,7 +78,25 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setCaptureRequestId(null);
     setIsCapturePending(false);
     setIsProcessing(false);
+    setSignatureData(null);
   }, []);
+
+  const [signatureData, setSignatureData] = useState<string | null>(null);
+
+  useEffect(() => {
+    socket.on('sync_signature', (payload: { signatureImage: string }) => {
+      console.log('🔌 Socket received sync_signature:', payload ? 'Has Payload' : 'Empty');
+      if (payload?.signatureImage) {
+        console.log('✅ Updating signature data in context');
+        setSignatureData(payload.signatureImage);
+      }
+    });
+
+    return () => {
+      socket.off('sync_signature');
+    };
+  }, []);
+
 
   const setTimer = useCallback((seconds: number) => {
     setTimerDuration(seconds);
@@ -323,6 +344,9 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo<BoothContextType>(() => ({
     sessionId,
     setSessionId,
+    signatureData,
+    setSignatureData,
+
     timerDuration,
     step,
     totalShots: TOTAL_SHOTS,

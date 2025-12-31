@@ -8,6 +8,8 @@ import { socket } from '@/lib/socket';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BoothProvider, useBooth } from '@/context/BoothContext';
+import { SigningStep } from './SigningStep';
+
 
 const TIMER_OPTIONS = [7, 10];
 const FRAME_OPTIONS = [
@@ -138,12 +140,6 @@ const ControllerContent = () => {
 
   const handleFilterChange = (filterId: string) => {
     setFilter(filterId);
-  };
-
-  const handleFinish = () => {
-    if (!sessionId) return;
-    socket.emit('trigger_finish', sessionId);
-    setProcessing(true);
   };
 
   const captureDisabled = isCapturePending || capturedCount >= totalShots;
@@ -380,7 +376,7 @@ const ControllerContent = () => {
 
         <Button
           className="w-full h-16 text-xl font-bold mt-8"
-          onClick={handleFinish}
+          onClick={() => setStep('SIGNING')}
           disabled={isProcessing || customMessage.length > 10}
         >
           {isProcessing ? (
@@ -389,12 +385,31 @@ const ControllerContent = () => {
               Đang xử lý...
             </>
           ) : (
-            'Hoàn thành / In ảnh'
+            'Tiếp Tục / Ký Tên'
           )}
         </Button>
       </div>
     );
   };
+
+  const handleConfirmSignature = (signatureData: string) => {
+    if (!sessionId) return;
+    if (signatureData) {
+      socket.emit('sync_signature', { sessionId, signatureImage: signatureData });
+    }
+    // Small delay to ensure signature is synced to monitor before finishing
+    setTimeout(() => {
+      socket.emit('trigger_finish', sessionId);
+      setProcessing(true);
+    }, 500);
+  };
+
+  const renderSigningStep = () => (
+    <SigningStep
+      onConfirm={handleConfirmSignature}
+      isProcessing={isProcessing}
+    />
+  );
 
   const renderCompletedStep = () => (
     <div className="space-y-6 text-center py-10">
@@ -417,12 +432,15 @@ const ControllerContent = () => {
         return renderSelectionStep();
       case 'REVIEW':
         return renderReviewStep();
+      case 'SIGNING':
+        return renderSigningStep();
       case 'COMPLETED':
         return renderCompletedStep();
       default:
         return renderConfigStep();
     }
   };
+
 
   if (!sessionId) {
     return (

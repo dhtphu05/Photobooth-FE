@@ -88,7 +88,10 @@ const MonitorContent = () => {
     totalShots,
     capturedCount,
     customMessage,
+    signatureData,
   } = useBooth();
+
+
 
   const webcamRef = useRef<Webcam>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | number | null>(null);
@@ -386,7 +389,26 @@ const MonitorContent = () => {
       const message = customMessage || 'itmedia';
       ctx.fillText(message, msgX, msgY);
 
+      // 3. Signature
+      if (signatureData) {
+        try {
+          const sigBlob = await fetch(signatureData).then(res => res.blob());
+          const sigBitmap = await createImageBitmap(sigBlob);
 
+          // Let's define a fixed box for signature
+          const sigW = canvas.width * 0.3; // 30% width
+          const sigH = sigW * (300 / 500); // Maintain aspect ratio of controller canvas (500x300)
+
+          const sigX = canvas.width - sigW - (canvas.width * 0.05); // 5% padding from right
+          const sigY = canvas.height - sigH - (canvas.height * 0.05); // 5% padding from bottom
+
+          ctx.drawImage(sigBitmap, sigX, sigY, sigW, sigH);
+          sigBitmap.close();
+          console.log('✅ Drawn signature on canvas');
+        } catch (e) {
+          console.warn('Failed to draw signature', e);
+        }
+      }
     }
 
     const stripBlob = await new Promise<Blob>((resolve, reject) => {
@@ -400,7 +422,8 @@ const MonitorContent = () => {
     });
     const previewUrl = URL.createObjectURL(stripBlob);
     return { stripBlob, previewUrl };
-  }, [rawPhotos, requiredShots, selectedFilter, selectedFrameId, selectedPhotoIndices, isCustomFrame, customMessage]);
+  }, [rawPhotos, requiredShots, selectedFilter, selectedFrameId, selectedPhotoIndices, isCustomFrame, customMessage, signatureData]);
+
 
   const composeVideoRecap = useCallback(async (): Promise<Blob | null> => {
     const available = selectedPhotoIndices
@@ -465,6 +488,21 @@ const MonitorContent = () => {
           overlayImage = img;
         } catch (e) {
           console.warn('Overlay load failed for video', e);
+        }
+      }
+
+      let signatureImage: HTMLImageElement | null = null;
+      if (signatureData) {
+        try {
+          const img = new Image();
+          img.src = signatureData;
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+          });
+          signatureImage = img;
+        } catch (e) {
+          console.warn('Signature load failed for video', e);
         }
       }
 
@@ -631,6 +669,18 @@ const MonitorContent = () => {
 
           const message = customMessage || 'itmedia';
           ctx.fillText(message, msgX, msgY);
+
+          // 3. Signature
+          // 3. Signature
+          if (signatureImage) {
+            const sigW = canvas.width * 0.3;
+            const sigH = sigW * (300 / 500);
+
+            const sigX = canvas.width - sigW - (canvas.width * 0.05);
+            const sigY = canvas.height - sigH - (canvas.height * 0.05);
+
+            ctx.drawImage(signatureImage, sigX, sigY, sigW, sigH);
+          }
         }
 
         if (performance.now() - startTime < targetDuration) {
@@ -653,7 +703,8 @@ const MonitorContent = () => {
       console.warn('Không thể ghép video recap', error);
       return clips[0] ?? null;
     }
-  }, [rawVideoClips, requiredShots, selectedFrameId, selectedPhotoIndices, isCustomFrame, customMessage]);
+  }, [rawVideoClips, requiredShots, selectedFrameId, selectedPhotoIndices, isCustomFrame, customMessage, signatureData]);
+
 
   const finishProcessing = useCallback(async () => {
     if (!sessionId || isUploading) return;
@@ -688,6 +739,17 @@ const MonitorContent = () => {
       if (videoBlob) {
         uploads.push(uploadSessionMedia(sessionId, { file: videoBlob }, { type: 'VIDEO' }));
       }
+
+      // Upload Signature
+      if (signatureData) {
+        try {
+          const sigBlob = await fetch(signatureData).then(res => res.blob());
+          uploads.push(uploadSessionMedia(sessionId, { file: sigBlob }, { type: 'SIGNATURE' as any }));
+        } catch (error) {
+          console.warn('Failed to upload signature', error);
+        }
+      }
+
       await Promise.all(uploads);
       setStep('COMPLETED');
       setStatusMessage('Đã sẵn sàng! Quét QR để tải về.');
@@ -860,6 +922,22 @@ const MonitorContent = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Signature Overlay */}
+                {signatureData && (
+                  <img
+                    src={signatureData}
+                    alt="Signature"
+                    className="absolute z-50 pointer-events-none"
+                    style={{
+                      width: '30%',
+                      right: '5%',
+                      bottom: '5%',
+                      opacity: 0.9,
+                    }}
+                  />
+                )}
+
               </div>
             )}
 

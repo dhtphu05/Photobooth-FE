@@ -23,6 +23,11 @@ export interface Session {
    * @nullable
    */
   selectedFrame: string | null;
+  /**
+   * Signature image data (Base64)
+   * @nullable
+   */
+  signatureImage: string | null;
   /** Whether the session output is mirrored */
   isMirrored: boolean;
   /** The date and time when the session was created */

@@ -16,6 +16,7 @@ export interface ClientToServerEvents {
     join: (sessionId: string) => void;
     update_config: (payload: UpdateConfigPayload) => void;
     trigger_finish: (sessionId: string) => void;
+    sync_signature: (payload: { sessionId: string; signatureImage: string }) => void;
     photo_taken: (payload: { sessionId: string; image: string; slot?: number; requestId?: string | null }) => void;
     processing_start: (sessionId: string) => void;
     processing_done: (sessionId: string) => void;
@@ -24,6 +25,7 @@ export interface ClientToServerEvents {
 export interface ServerToClientEvents {
     update_config: (payload: ServerConfigBroadcast) => void;
     trigger_finish: () => void;
+    sync_signature: (payload: { signatureImage: string }) => void;
     photo_taken: (payload: { image: string; slot?: number; requestId?: string | null }) => void;
     processing_start: () => void;
     processing_done: () => void;
