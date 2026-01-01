@@ -382,8 +382,14 @@ const MonitorContent = () => {
 
     // Draw Overlay Text (Timestamp & Message)
     if (isCustomFrame) {
-      // Hardcoded Timestamp as per request
-      const timestampText = '0h00, 01/01/2026';
+      const now = new Date();
+      // Format: 17h37, 31/12/2025
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const year = now.getFullYear();
+      const timestampText = `${hours}h${minutes}, ${day}/${month}/${year}`;
 
       // --- USE OVERLAY_CONFIG ---
       const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = OVERLAY_CONFIG;
@@ -677,8 +683,13 @@ const MonitorContent = () => {
 
         // Draw Overlay Text (Timestamp & Message)
         if (isCustomFrame) {
-          // Hardcoded Timestamp as per request
-          const timestampText = '0h00, 01/01/2026';
+          const now = new Date();
+          const hours = now.getHours().toString().padStart(2, '0');
+          const minutes = now.getMinutes().toString().padStart(2, '0');
+          const day = now.getDate().toString().padStart(2, '0');
+          const month = (now.getMonth() + 1).toString().padStart(2, '0');
+          const year = now.getFullYear();
+          const timestampText = `${hours}h${minutes}, ${day}/${month}/${year}`;
 
           // Adjust font size for canvas resolution (width 1080)
           // Original was 55px for 2480w. Now 45px/2480 ~ 1.8%
