@@ -54,7 +54,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const [photoPreviews, setPhotoPreviews] = useState<(string | null)[]>(Array(TOTAL_SHOTS).fill(null));
   const [selectedPhotoIndices, setSelectedPhotoIndices] = useState<number[]>([]);
   const [capturedCount, setCapturedCount] = useState(0);
-  const [selectedFrameId, setSelectedFrameId] = useState('frame-bao-xuan');
+  const [selectedFrameId, setSelectedFrameId] = useState('frame-quan-su');
   const [selectedFilter, setSelectedFilter] = useState('normal');
   const [customMessage, setCustomMessageState] = useState('');
   const [captureRequestId, setCaptureRequestId] = useState<string | null>(null);

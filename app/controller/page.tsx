@@ -20,6 +20,7 @@ const FRAME_OPTIONS = [
   {id: 'frame-cuoi-1', label: 'Cuối 1', image: '/frame-cuoi-1.png'},
   {id: 'frame-cuoi-2', label: 'Cuối 2', image: '/frame-cuoi-2.png'},
   {id: 'frame-cuoi-3', label: 'Cuối 3', image: '/frame-cuoi-3.png'},
+  {id: 'frame-quan-su', label: 'Quân sự', image: '/frame-quan-su.png'},
 ];
 const FILTER_OPTIONS = [
   { id: 'normal', label: 'Original' },

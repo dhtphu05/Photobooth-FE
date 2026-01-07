@@ -23,6 +23,7 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-cuoi-1': '/frame-cuoi-1.png',
   'frame-cuoi-2': '/frame-cuoi-2.png',
   'frame-cuoi-3': '/frame-cuoi-3.png',
+  'frame-quan-su': '/frame-quan-su.png',
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -46,6 +47,7 @@ const FRAME_TEXT_COLORS: Record<string, string> = {
   'frame-cuoi-1': '#a40000',
   'frame-cuoi-2': '#e4f407ff',
   'frame-cuoi-3': '#ffffffff',
+  'frame-quan-su': '#4e6f39',
 };
 
 const OVERLAY_CONFIG = {
@@ -294,7 +296,7 @@ const MonitorContent = () => {
 
   const filterClass = FILTER_CLASS_MAP[selectedFilter] ?? '';
 
-  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3'].includes(selectedFrameId);
+  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su'].includes(selectedFrameId);
 
   const composeStripImage = useCallback(async () => {
     const selectedBlobs = selectedPhotoIndices
