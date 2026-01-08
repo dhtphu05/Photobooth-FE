@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Download, Loader2, Share2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import QRCode from 'react-qr-code';
 
 type Filter = 'none' | 'bw' | 'vintage' | 'kpop' | 'dreamy';
 
@@ -376,6 +377,37 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                 </div>
 
                 <Card>
+                    <div className="pt-6 border-t flex flex-col items-center gap-6">
+                            <div className="text-center space-y-2">
+                                <h3 className="font-semibold text-lg">Share with friends</h3>
+                                <p className="text-sm text-muted-foreground">Scan to open on phone</p>
+                            </div>
+
+                            {typeof window !== 'undefined' && (
+                                <div className="p-4 bg-white rounded-xl shadow-md border inline-block">
+                                    <QRCode
+                                        value={window.location.href}
+                                        size={256}
+                                        viewBox={`0 0 256 256`}
+                                        style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="w-full max-w-xs">
+                                <Button className="w-full" variant="secondary" onClick={() => {
+                                    navigator.share?.({
+                                        title: 'My Photobooth Session',
+                                        url: window.location.href
+                                    }).catch(() => {
+                                        navigator.clipboard.writeText(window.location.href);
+                                        alert('Link copied to clipboard!');
+                                    });
+                                }}>
+                                    <Share2 className="mr-2 h-4 w-4" /> Copy / Share Link
+                                </Button>
+                            </div>
+                        </div>
                     <CardHeader>
                         <CardTitle className="text-center">Raw Files</CardTitle>
                     </CardHeader>
@@ -434,20 +466,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                             </div>
                         )}
 
-                        <div className="pt-4 border-t text-center">
-                            <p className="text-xs text-muted-foreground mb-2">Share this page</p>
-                            <Button variant="secondary" size="sm" onClick={() => {
-                                navigator.share?.({
-                                    title: 'My Photobooth Session',
-                                    url: window.location.href
-                                }).catch(() => {
-                                    navigator.clipboard.writeText(window.location.href);
-                                    alert('Link copied to clipboard!');
-                                });
-                            }}>
-                                <Share2 className="mr-2 h-3 w-3" /> Share Link
-                            </Button>
-                        </div>
+                        
                     </CardContent>
                 </Card>
             </div>
