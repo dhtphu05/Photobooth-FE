@@ -793,6 +793,7 @@ const MonitorContent = () => {
 
 
   const finishProcessing = useCallback(async () => {
+    if (!sessionId) return;
     setUploadError(null);
     setIsUploading(true);
     setStatusMessage('Đang xử lý & upload (V2 fix)...');
@@ -865,6 +866,9 @@ const MonitorContent = () => {
       return;
     }
     switch (step) {
+      case 'FRAME_SELECTION':
+        setStatusMessage('Đang chờ chọn khung hình...');
+        break;
       case 'CONFIG':
         setStatusMessage('Chọn thời gian đếm ngược ở controller để bắt đầu.');
         break;
@@ -1060,6 +1064,16 @@ const MonitorContent = () => {
             {countdown && (
               <div className="absolute inset-0 flex items-center justify-center z-20">
                 <span className="text-white text-[15rem] font-black animate-pulse font-mono leading-none drop-shadow-2xl">{countdown}</span>
+              </div>
+            )}
+
+            {/* FRAME_SELECTION Overlay - Informational */}
+            {step === 'FRAME_SELECTION' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-20 z-30 pointer-events-none">
+                {/* <div className="bg-black/50 backdrop-blur-md text-white px-8 py-4 rounded-full flex items-center gap-4 animate-in fade-in slide-in-from-bottom-10">
+                  <svg className="w-8 h-8 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+                  <p className="text-xl font-bold">Vui lòng chọn khung ảnh trên Tablet</p>
+                </div> */}
               </div>
             )}
           </div>

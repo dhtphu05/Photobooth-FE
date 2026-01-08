@@ -11,16 +11,16 @@ import { BoothProvider, useBooth } from '@/context/BoothContext';
 import { SigningStep } from './SigningStep';
 
 
-const TIMER_OPTIONS = [7, 10];
+const TIMER_OPTIONS = [5, 7, 10];
 const FRAME_OPTIONS = [
   { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang-1.png' },
   { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/frame-bao-xuan-1.png' },
   { id: 'frame-chuyen-tau', label: 'Chuyến tàu', image: '/frame-chuyen-tau-thanh-xuan-1.png' },
   { id: 'frame-final-1', label: 'Final 1', image: '/frame-final-1.png' },
-  {id: 'frame-cuoi-1', label: 'Cuối 1', image: '/frame-cuoi-1-1.png'},
-  {id: 'frame-cuoi-2', label: 'Cuối 2', image: '/frame-cuoi-2.png'},
-  {id: 'frame-cuoi-3', label: 'Cuối 3', image: '/frame-cuoi-3.png'},
-  {id: 'frame-quan-su', label: 'Quân sự', image: '/frame-quan-su.png'},
+  { id: 'frame-cuoi-1', label: 'Cuối 1', image: '/frame-cuoi-1-1.png' },
+  { id: 'frame-cuoi-2', label: 'Cuối 2', image: '/frame-cuoi-2.png' },
+  { id: 'frame-cuoi-3', label: 'Cuối 3', image: '/frame-cuoi-3.png' },
+  { id: 'frame-quan-su', label: 'Quân sự', image: '/frame-quan-su.png' },
 ];
 const FILTER_OPTIONS = [
   { id: 'normal', label: 'Original' },
@@ -149,13 +149,69 @@ const ControllerContent = () => {
   const captureDisabled = isCapturePending || capturedCount >= totalShots;
   const canProceedSelection = selectedPhotoIndices.length === requiredShots;
 
+  const renderFrameSelectionStep = () => (
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-semibold">Chọn Khung Ảnh</h2>
+        <p className="text-muted-foreground">Vui lòng chọn khung ảnh bạn thích</p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+        {FRAME_OPTIONS.filter(frame => {
+          if (frame.id === 'frame-final-1') {
+            const now = new Date();
+            const startTime = new Date('2025-12-31T09:40:00+07:00');
+            const endTime = new Date('2025-12-31T11:45:00+07:00');
+            return now >= startTime && now <= endTime;
+          }
+          return true;
+        }).map(frame => (
+          <button
+            key={frame.id}
+            onClick={() => handleFrameChange(frame.id)}
+            className={`relative group rounded-xl overflow-hidden aspect-[2480/3508] transition-all duration-200 ${selectedFrameId === frame.id
+              ? 'ring-4 ring-black shadow-xl scale-[1.02]'
+              : 'ring-1 ring-gray-200 hover:ring-2 hover:ring-gray-300'
+              }`}
+          >
+            <img
+              src={frame.image}
+              alt={frame.label}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white py-2 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              {frame.label}
+            </div>
+            {selectedFrameId === frame.id && (
+              <div className="absolute top-2 right-2 bg-black text-white rounded-full p-1 shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 pb-8 sm:static sm:p-0 sm:bg-transparent sm:border-0">
+        <Button
+          onClick={() => setStep('CONFIG')}
+          className="w-full h-16 text-xl font-bold rounded-xl shadow-lg"
+        >
+          Xác Nhận
+          <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+        </Button>
+      </div>
+    </div>
+  );
+
   const renderConfigStep = () => (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Bắt đầu chụp</h2>
+        <h2 className="text-2xl font-semibold">Cài Đặt Chụp</h2>
         <p className="text-muted-foreground">Chọn thời gian đếm ngược để bắt đầu</p>
       </div>
-      <div className="grid grid-cols-2 gap-6 max-w-lg mx-auto">
+      <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto">
         {TIMER_OPTIONS.map(option => (
           <Button
             key={option}
@@ -294,46 +350,6 @@ const ControllerContent = () => {
     return (
       <div className="space-y-8">
         <div className="space-y-4">
-          <p className="font-semibold text-lg text-center">Chọn Frame</p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {FRAME_OPTIONS.filter(frame => {
-              if (frame.id === 'frame-final-1') {
-                const now = new Date();
-                const startTime = new Date('2025-12-31T09:40:00+07:00');
-                const endTime = new Date('2025-12-31T11:45:00+07:00');
-                return now >= startTime && now <= endTime;
-              }
-              return true;
-            }).map(frame => (
-              <button
-                key={frame.id}
-                onClick={() => handleFrameChange(frame.id)}
-                className={`relative group rounded-xl overflow-hidden aspect-[2480/3508] transition-all duration-200 ${selectedFrameId === frame.id
-                  ? 'ring-4 ring-black shadow-xl scale-[1.02]'
-                  : 'ring-1 ring-gray-200 hover:ring-2 hover:ring-gray-300'
-                  }`}
-              >
-                <img
-                  src={frame.image}
-                  alt={frame.label}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white py-2 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                  {frame.label}
-                </div>
-                {selectedFrameId === frame.id && (
-                  <div className="absolute top-2 right-2 bg-black text-white rounded-full p-1 shadow-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-4">
           <p className="font-semibold text-lg text-center">Lời nhắn</p>
           <div className="flex flex-col items-center gap-2">
             <div className="relative w-full max-w-sm">
@@ -430,6 +446,8 @@ const ControllerContent = () => {
 
   const renderStepContent = () => {
     switch (step) {
+      case 'FRAME_SELECTION':
+        return renderFrameSelectionStep();
       case 'CAPTURE':
         return renderCaptureStep();
       case 'SELECTION':

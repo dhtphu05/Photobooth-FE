@@ -6,7 +6,7 @@ import { socket } from '@/lib/socket';
 const TOTAL_SHOTS = 6;
 const REQUIRED_SHOTS = 3;
 
-export type BoothStep = 'CONFIG' | 'CAPTURE' | 'SELECTION' | 'REVIEW' | 'SIGNING' | 'COMPLETED';
+export type BoothStep = 'FRAME_SELECTION' | 'CONFIG' | 'CAPTURE' | 'SELECTION' | 'REVIEW' | 'SIGNING' | 'COMPLETED';
 
 interface BoothContextType {
   sessionId: string | null;
@@ -49,7 +49,7 @@ const BoothContext = createContext<BoothContextType | undefined>(undefined);
 export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [timerDuration, setTimerDuration] = useState(5);
-  const [step, setStep] = useState<BoothStep>('CONFIG');
+  const [step, setStep] = useState<BoothStep>('FRAME_SELECTION');
   const [rawPhotos, setRawPhotos] = useState<(Blob | null)[]>(Array(TOTAL_SHOTS).fill(null));
   const [photoPreviews, setPhotoPreviews] = useState<(string | null)[]>(Array(TOTAL_SHOTS).fill(null));
   const [selectedPhotoIndices, setSelectedPhotoIndices] = useState<number[]>([]);
@@ -66,12 +66,12 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const resetSession = useCallback(() => {
     setSessionId(null);
     setTimerDuration(5);
-    setStep('CONFIG');
+    setStep('FRAME_SELECTION');
     setCapturedCount(0);
     setSelectedPhotoIndices([]);
     setRawPhotos(Array(TOTAL_SHOTS).fill(null));
     setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
-    setSelectedFrameId('frame-bao');
+    setSelectedFrameId('frame-bao-xuan');
     setSelectedFilter('normal');
     setCustomMessageState('');
     setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
@@ -107,7 +107,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
     setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
     if (sessionId) {
-      socket.emit('update_config', { sessionId, timerDuration: seconds, reset: true });
+      socket.emit('update_config', { sessionId, timerDuration: seconds, reset: true, step: 'CAPTURE' });
     }
   }, [sessionId]);
 
@@ -306,7 +306,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
         setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
         setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
         setSelectedPhotoIndices([]);
-        setStep('CAPTURE');
+        setStep('FRAME_SELECTION');
       }
       if (payload.selectedPhotoIndices !== undefined) {
         setSelectedPhotoIndices(payload.selectedPhotoIndices);
