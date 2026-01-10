@@ -9,18 +9,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BoothProvider, useBooth } from '@/context/BoothContext';
 import { SigningStep } from './SigningStep';
+import { getLayoutConfig, DEFAULT_OVERLAY_CONFIG } from '@/app/config/layouts';
 
 
 const TIMER_OPTIONS = [5, 7, 10];
 const FRAME_OPTIONS = [
-  { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang-1.png' },
-  { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/frame-bao-xuan-1.png' },
-  { id: 'frame-chuyen-tau', label: 'Chuyến tàu', image: '/frame-chuyen-tau-thanh-xuan-1.png' },
-  { id: 'frame-final-1', label: 'Final 1', image: '/frame-final-1.png' },
-  { id: 'frame-cuoi-1', label: 'Cuối 1', image: '/frame-cuoi-1-1.png' },
+  { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang.png' },
+  { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/frame-bao-xuan.png' },
+  { id: 'frame-chuyen-tau', label: 'Chuyến tàu', image: '/frame-chuyen-tau-thanh-xuan.png' },
+  { id: 'frame-final-1', label: 'Final 1', image: '/frame-final.png' },
+  { id: 'frame-cuoi-1', label: 'Cuối 1', image: '/frame-cuoi-1.png' },
   { id: 'frame-cuoi-2', label: 'Cuối 2', image: '/frame-cuoi-2.png' },
   { id: 'frame-cuoi-3', label: 'Cuối 3', image: '/frame-cuoi-3.png' },
   { id: 'frame-quan-su', label: 'Quân sự', image: '/frame-quan-su.png' },
+  { id: 'frame-lich-xanh-duong', label: 'Lịch xanh dương', image: '/frame-lich-xanh-duong.png' },
+
 ];
 const FILTER_OPTIONS = [
   { id: 'normal', label: 'Original' },
@@ -347,6 +350,32 @@ const ControllerContent = () => {
   );
 
   const renderReviewStep = () => {
+    const layoutConfig = getLayoutConfig(selectedFrameId);
+    const overlayConfig = layoutConfig.overlay ?? DEFAULT_OVERLAY_CONFIG;
+    const maxWords = overlayConfig.MESSAGE.MAX_WORDS;
+
+    // Default legacy limit logic: 10 chars (preserving existing weird behavior for other frames)
+    // If maxWords is set, use it.
+
+    const words = customMessage.trim().split(/\s+/).filter(w => w.length > 0);
+    const currentWordCount = words.length;
+
+    let isError = false;
+    let errorMessage = '';
+
+    if (maxWords !== undefined) {
+      if (currentWordCount > maxWords) {
+        isError = true;
+        errorMessage = `Tối đa ${maxWords} từ`;
+      }
+    } else {
+      // Fallback to original hardcoded check (length > 10 chars)
+      if (customMessage.length > 10) {
+        isError = true;
+        errorMessage = 'Quá giới hạn ký tự (10)';
+      }
+    }
+
     return (
       <div className="space-y-8">
         <div className="space-y-4">
@@ -358,20 +387,21 @@ const ControllerContent = () => {
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
                 placeholder="Nhập tên..."
-                className={`w-full rounded-lg border p-3 text-center text-lg transition-colors ${customMessage.length > 10
+                className={`w-full rounded-lg border p-3 text-center text-lg transition-colors ${isError
                   ? 'border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-200'
                   : 'border-gray-300 focus:border-black focus:ring-gray-200'
                   }`}
-                maxLength={30}
+                // Remove hard maxLength if using word count, or set high
+                maxLength={maxWords ? 200 : 30}
               />
-              <div className={`absolute -bottom-6 right-0 text-sm font-medium ${customMessage.length > 10 ? 'text-red-500' : 'text-gray-400'
+              <div className={`absolute -bottom-6 right-0 text-sm font-medium ${isError ? 'text-red-500' : 'text-gray-400'
                 }`}>
-                {customMessage.length}/10
+                {maxWords ? `${currentWordCount}/${maxWords} từ` : `${customMessage.length}/10 ký tự`}
               </div>
             </div>
-            {customMessage.length > 10 && (
+            {isError && (
               <p className="text-red-500 text-sm font-medium animate-in fade-in slide-in-from-top-1">
-                Quá giới hạn số từ
+                {errorMessage}
               </p>
             )}
           </div>
@@ -397,7 +427,7 @@ const ControllerContent = () => {
         <Button
           className="w-full h-16 text-xl font-bold mt-8"
           onClick={() => setStep('SIGNING')}
-          disabled={isProcessing || customMessage.length > 10}
+          disabled={isProcessing || isError}
         >
           {isProcessing ? (
             <>

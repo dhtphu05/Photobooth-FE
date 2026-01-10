@@ -2,9 +2,10 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { socket } from '@/lib/socket';
+import { getLayoutConfig } from '@/app/config/layouts';
 
-const TOTAL_SHOTS = 6;
-const REQUIRED_SHOTS = 3;
+const MAX_TOTAL_SHOTS = 6;
+// const REQUIRED_SHOTS = 3; // Now dynamic
 
 export type BoothStep = 'FRAME_SELECTION' | 'CONFIG' | 'CAPTURE' | 'SELECTION' | 'REVIEW' | 'SIGNING' | 'COMPLETED';
 
@@ -50,8 +51,8 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [timerDuration, setTimerDuration] = useState(5);
   const [step, setStep] = useState<BoothStep>('FRAME_SELECTION');
-  const [rawPhotos, setRawPhotos] = useState<(Blob | null)[]>(Array(TOTAL_SHOTS).fill(null));
-  const [photoPreviews, setPhotoPreviews] = useState<(string | null)[]>(Array(TOTAL_SHOTS).fill(null));
+  const [rawPhotos, setRawPhotos] = useState<(Blob | null)[]>(Array(MAX_TOTAL_SHOTS).fill(null));
+  const [photoPreviews, setPhotoPreviews] = useState<(string | null)[]>(Array(MAX_TOTAL_SHOTS).fill(null));
   const [selectedPhotoIndices, setSelectedPhotoIndices] = useState<number[]>([]);
   const [capturedCount, setCapturedCount] = useState(0);
   const [selectedFrameId, setSelectedFrameId] = useState('frame-bao-xuan');
@@ -61,7 +62,12 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const captureRequestIdRef = useRef<string | null>(null);
   const [isCapturePending, setIsCapturePending] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [rawVideoClips, setRawVideoClips] = useState<(Blob | null)[]>(Array(TOTAL_SHOTS).fill(null));
+  const [rawVideoClips, setRawVideoClips] = useState<(Blob | null)[]>(Array(MAX_TOTAL_SHOTS).fill(null));
+
+  // Determine dynamic counts based on selected frame
+  const layoutConfig = useMemo(() => getLayoutConfig(selectedFrameId), [selectedFrameId]);
+  const currentTotalShots = layoutConfig.captureCount;
+  const currentRequiredShots = layoutConfig.photoCount;
 
   const resetSession = useCallback(() => {
     setSessionId(null);
@@ -69,12 +75,12 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setStep('FRAME_SELECTION');
     setCapturedCount(0);
     setSelectedPhotoIndices([]);
-    setRawPhotos(Array(TOTAL_SHOTS).fill(null));
-    setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
+    setRawPhotos(Array(MAX_TOTAL_SHOTS).fill(null));
+    setPhotoPreviews(Array(MAX_TOTAL_SHOTS).fill(null));
     setSelectedFrameId('frame-bao-xuan');
     setSelectedFilter('normal');
     setCustomMessageState('');
-    setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
+    setRawVideoClips(Array(MAX_TOTAL_SHOTS).fill(null));
     setCaptureRequestId(null);
     setIsCapturePending(false);
     setIsProcessing(false);
@@ -103,21 +109,21 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setStep('CAPTURE');
     setCapturedCount(0);
     setSelectedPhotoIndices([]);
-    setRawPhotos(Array(TOTAL_SHOTS).fill(null));
-    setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
-    setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
+    setRawPhotos(Array(MAX_TOTAL_SHOTS).fill(null));
+    setPhotoPreviews(Array(MAX_TOTAL_SHOTS).fill(null));
+    setRawVideoClips(Array(MAX_TOTAL_SHOTS).fill(null));
     if (sessionId) {
       socket.emit('update_config', { sessionId, timerDuration: seconds, reset: true, step: 'CAPTURE' });
     }
   }, [sessionId]);
 
   const takeShot = useCallback(() => {
-    if (!sessionId || isCapturePending || capturedCount >= TOTAL_SHOTS) return;
+    if (!sessionId || isCapturePending || capturedCount >= currentTotalShots) return;
     const requestId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     setIsCapturePending(true);
     setCaptureRequestId(requestId);
     socket.emit('update_config', { sessionId, captureRequestId: requestId });
-  }, [sessionId, isCapturePending, capturedCount]);
+  }, [sessionId, isCapturePending, capturedCount, currentTotalShots]);
 
   const acknowledgeCapture = useCallback(() => {
     setIsCapturePending(false);
@@ -135,7 +141,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     const currentRequestId = captureRequestIdRef.current;
 
     // Calculate assigned slot synchronously using current state
-    let assignedSlot = Math.min(capturedCount, TOTAL_SHOTS - 1);
+    let assignedSlot = Math.min(capturedCount, currentTotalShots - 1);
 
     // Check collision against current rawPhotos state
     if (rawPhotos[assignedSlot] !== null) {
@@ -181,8 +187,8 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setCapturedCount(prev => {
-      const next = Math.min(prev + 1, TOTAL_SHOTS);
-      if (next === TOTAL_SHOTS) {
+      const next = Math.min(prev + 1, currentTotalShots);
+      if (next === currentTotalShots) {
         setStep('SELECTION');
       }
       return next;
@@ -197,10 +203,10 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
         requestId: currentRequestId,
       });
     }
-  }, [acknowledgeCapture, sessionId, capturedCount, rawPhotos]);
+  }, [acknowledgeCapture, sessionId, capturedCount, rawPhotos, currentTotalShots]);
 
   const receiveRemotePhoto = useCallback((previewUrl: string, slot?: number) => {
-    let targetSlot = typeof slot === 'number' && slot >= 0 && slot < TOTAL_SHOTS ? slot : -1;
+    let targetSlot = typeof slot === 'number' && slot >= 0 && slot < currentTotalShots ? slot : -1;
 
     // If no specific slot, find the first empty one from current state
     if (targetSlot === -1) {
@@ -219,15 +225,15 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     });
 
     setCapturedCount(prev => {
-      const next = Math.min(prev + 1, TOTAL_SHOTS);
-      if (next === TOTAL_SHOTS) {
+      const next = Math.min(prev + 1, currentTotalShots);
+      if (next === currentTotalShots) {
         setStep('SELECTION');
       }
       return next;
     });
 
     setIsCapturePending(false);
-  }, [photoPreviews]);
+  }, [photoPreviews, currentTotalShots]);
 
   const togglePhotoSelection = useCallback((index: number) => {
     setSelectedPhotoIndices(prev => {
@@ -236,7 +242,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
       if (exists) {
         updated = prev.filter(i => i !== index);
       } else {
-        if (prev.length >= REQUIRED_SHOTS) {
+        if (prev.length >= currentRequiredShots) {
           return prev;
         }
         updated = [...prev, index];
@@ -246,15 +252,15 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
       }
       return updated;
     });
-  }, [sessionId]);
+  }, [sessionId, currentRequiredShots]);
 
   const confirmSelection = useCallback(() => {
-    if (selectedPhotoIndices.length !== REQUIRED_SHOTS) return;
+    if (selectedPhotoIndices.length !== currentRequiredShots) return;
     setStep('REVIEW');
     if (sessionId) {
       socket.emit('update_config', { sessionId, selectedPhotoIndices, step: 'REVIEW' });
     }
-  }, [selectedPhotoIndices, sessionId]);
+  }, [selectedPhotoIndices, sessionId, currentRequiredShots]);
 
   const setFrame = useCallback((frameId: string) => {
     setSelectedFrameId(frameId);
@@ -302,9 +308,9 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
       }
       if (payload.reset) {
         setCapturedCount(0);
-        setRawPhotos(Array(TOTAL_SHOTS).fill(null));
-        setRawVideoClips(Array(TOTAL_SHOTS).fill(null));
-        setPhotoPreviews(Array(TOTAL_SHOTS).fill(null));
+        setRawPhotos(Array(MAX_TOTAL_SHOTS).fill(null));
+        setRawVideoClips(Array(MAX_TOTAL_SHOTS).fill(null));
+        setPhotoPreviews(Array(MAX_TOTAL_SHOTS).fill(null));
         setSelectedPhotoIndices([]);
         setStep('FRAME_SELECTION');
       }
@@ -329,13 +335,13 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
 
   // Auto-capture logic for continuous shooting
   useEffect(() => {
-    if (step === 'CAPTURE' && !isCapturePending && capturedCount < TOTAL_SHOTS) {
+    if (step === 'CAPTURE' && !isCapturePending && capturedCount < currentTotalShots) {
       const timer = setTimeout(() => {
         takeShot();
       }, 1000); // Small buffer between shots
       return () => clearTimeout(timer);
     }
-  }, [step, isCapturePending, capturedCount, takeShot]);
+  }, [step, isCapturePending, capturedCount, takeShot, currentTotalShots]);
 
   useEffect(() => {
     captureRequestIdRef.current = captureRequestId;
@@ -349,8 +355,8 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
 
     timerDuration,
     step,
-    totalShots: TOTAL_SHOTS,
-    requiredShots: REQUIRED_SHOTS,
+    totalShots: currentTotalShots,
+    requiredShots: currentRequiredShots,
     capturedCount,
     rawPhotos,
     rawVideoClips,
@@ -379,6 +385,8 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     sessionId,
     timerDuration,
     step,
+    currentTotalShots,
+    currentRequiredShots,
     capturedCount,
     rawPhotos,
     rawVideoClips,

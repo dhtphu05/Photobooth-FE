@@ -9,6 +9,7 @@ import { socket } from '@/lib/socket';
 import { QRCodeResult } from '@/components/QRCodeResult';
 import { Button } from '@/components/ui/button';
 import { uploadSessionMedia } from '@/api/endpoints/sessions/sessions';
+import { getLayoutConfig, DEFAULT_OVERLAY_CONFIG } from '@/app/config/layouts';
 
 const FRAME_ASSETS: Record<string, string | null> = {
   'frame-1': 'https://cdn.freehihi.com/68fdab4e38d77.png',
@@ -24,6 +25,7 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-cuoi-2': '/frame-cuoi-2.png',
   'frame-cuoi-3': '/frame-cuoi-3.png',
   'frame-quan-su': '/frame-quan-su.png',
+  'frame-lich-xanh-duong': '/frame-lich-xanh-duong.png'
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -48,31 +50,12 @@ const FRAME_TEXT_COLORS: Record<string, string> = {
   'frame-cuoi-2': '#e4f407ff',
   'frame-cuoi-3': '#ffffffff',
   'frame-quan-su': '#4e6f39',
+  'frame-lich-xanh-duong': '#0072f4ff',
 };
 
-const OVERLAY_CONFIG = {
-  TIMESTAMP: {
-    TOP_PERCENT: 0.165,      // Dịch chuyển lên/xuống (0.0 - 1.0)
-    LEFT_PERCENT: 0.000001,     // Dịch chuyển trái/phải (0.0 - 1.0)
-    WIDTH_PERCENT: 0.26,    // Chiều rộng khu vực chứa text
-    FONT_SIZE_PERCENT: 0.01, // Kích thước chữ so với chiều cao ảnh (gốc ~40px/3508px ≈ 0.011, tăng lên tí cho dễ nhìn)
-    ALIGN: 'center' as CanvasTextAlign,
-  },
-  MESSAGE: {
-    TOP_PERCENT: 0.165,     // Dịch chuyển lên/xuống (gần với timestamp)
-    LEFT_PERCENT: 0.35,    // Vị trí bắt đầu block msg
-    WIDTH_PERCENT: 0.145,   // Chiều rộng block msg
-    FONT_SIZE_PERCENT: 0.011, // Kích thước chữ
-    ALIGN: 'center' as CanvasTextAlign,
-  },
-  // --- CẤU HÌNH TINH CHỈNH CHO XUẤT ẢNH/VIDEO (So với Preview) ---
-  EXPORT_CONFIG: {
-    // Dịch xuống một chút so với preview (VD: 0.005 là 0.5%)
-    TOP_OFFSET_PERCENT: 0.002,
-    // Tăng kích thước chữ xuất ra (VD: 1.1 là to hơn 10%)
-    FONT_SCALE: 1.5,
-  }
-};
+// --- OVERLAY CONFIG MOVED TO layouts.ts ---
+
+// Helper: Load Image safely via HTMLImageElement (Compatible with Base64 & CORS)
 
 // Helper: Load Image safely via HTMLImageElement (Compatible with Base64 & CORS)
 const loadImage = (src: string): Promise<HTMLImageElement> => {
@@ -296,7 +279,7 @@ const MonitorContent = () => {
 
   const filterClass = FILTER_CLASS_MAP[selectedFilter] ?? '';
 
-  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su'].includes(selectedFrameId);
+  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong'].includes(selectedFrameId);
 
   const composeStripImage = useCallback(async () => {
     const selectedBlobs = selectedPhotoIndices
@@ -329,43 +312,35 @@ const MonitorContent = () => {
 
     ctx.filter = CANVAS_FILTER_MAP[selectedFilter] ?? 'none';
 
-    if (isCustomFrame) {
-      // Shared slots for both frame-bao and frame-thanh-xuan for now
-      const slots = [
-        { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
-        { x: 0.038, y: 0.580, w: 0.445, h: 0.175 },
-        { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
-      ];
+    ctx.filter = CANVAS_FILTER_MAP[selectedFilter] ?? 'none';
 
-      slots.forEach((slot, index) => {
-        if (index < bitmaps.length) {
-          const bitmap = bitmaps[index];
-          const dx = slot.x * canvas.width;
-          const dy = slot.y * canvas.height;
-          const dw = slot.w * canvas.width;
-          const dh = slot.h * canvas.height;
+    // DYNAMIC LAYOUT RENDERING
+    const layoutConfig = getLayoutConfig(selectedFrameId);
+    const slots = layoutConfig.slots;
 
-          const srcRatio = bitmap.width / bitmap.height;
-          const dstRatio = dw / dh;
-          let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
+    slots.forEach((slot, index) => {
+      if (index < bitmaps.length) {
+        const bitmap = bitmaps[index];
+        const dx = slot.x * canvas.width;
+        const dy = slot.y * canvas.height;
+        const dw = slot.w * canvas.width;
+        const dh = slot.h * canvas.height;
 
-          if (srcRatio > dstRatio) {
-            sw = bitmap.height * dstRatio;
-            sx = (bitmap.width - sw) / 2;
-          } else {
-            sh = bitmap.width / dstRatio;
-            sy = (bitmap.height - sh) / 2;
-          }
+        const srcRatio = bitmap.width / bitmap.height;
+        const dstRatio = dw / dh;
+        let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
 
-          ctx.drawImage(bitmap, sx, sy, sw, sh, dx, dy, dw, dh);
+        if (srcRatio > dstRatio) {
+          sw = bitmap.height * dstRatio;
+          sx = (bitmap.width - sw) / 2;
+        } else {
+          sh = bitmap.width / dstRatio;
+          sy = (bitmap.height - sh) / 2;
         }
-      });
-    } else {
-      const slotHeight = canvas.height / requiredShots;
-      bitmaps.forEach((bitmap, index) => {
-        ctx.drawImage(bitmap, 0, index * slotHeight, canvas.width, slotHeight);
-      });
-    }
+
+        ctx.drawImage(bitmap, sx, sy, sw, sh, dx, dy, dw, dh);
+      }
+    });
 
     bitmaps.forEach(bitmap => bitmap.close());
     ctx.filter = 'none';
@@ -393,13 +368,14 @@ const MonitorContent = () => {
       const year = now.getFullYear();
       const timestampText = `${hours}h${minutes}, ${day}/${month}/${year}`;
 
-      // --- USE OVERLAY_CONFIG ---
-      const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = OVERLAY_CONFIG;
+      // --- USE OVERLAY_CONFIG FROM LAYOUT ---
+      const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = layoutConfig.overlay ?? DEFAULT_OVERLAY_CONFIG;
       const textColor = FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c';
 
       // 1. Timestamp
       const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
-      ctx.font = `bold ${tsFontSize}px "Courier New", Courier, monospace`;
+      const tsFontStyle = TIMESTAMP.FONT_STYLE || 'normal';
+      ctx.font = `${tsFontStyle} ${tsFontSize}px ${TIMESTAMP.FONT_FAMILY}`;
       ctx.fillStyle = textColor;
       ctx.textBaseline = 'top';
       ctx.textAlign = TIMESTAMP.ALIGN;
@@ -413,13 +389,20 @@ const MonitorContent = () => {
       } else {
         tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
       }
+
+      // FIX: Manually shift Timestamp right for 'frame-lich-xanh-duong' only in Export to match printed expectation
+      if (selectedFrameId === 'frame-lich-xanh-duong') {
+        tsX += canvas.width * 0.03;
+      }
+
       const tsY = (TIMESTAMP.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
       ctx.fillText(timestampText, tsX, tsY);
 
       // 2. Message
       const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
-      ctx.font = `bold ${msgFontSize}px "Courier New", Courier, monospace`;
+      const msgFontStyle = MESSAGE.FONT_STYLE || 'normal';
+      ctx.font = `${msgFontStyle} ${msgFontSize}px ${MESSAGE.FONT_FAMILY}`;
       ctx.textAlign = MESSAGE.ALIGN;
 
       let msgX = 0;
@@ -509,8 +492,9 @@ const MonitorContent = () => {
 
     let slots: Blob[] = [...available];
 
-    // Check if using a custom frame logic (3 slots)
-    const targetCount = isCustomFrame ? 3 : requiredShots;
+    // Use dynamic photo count from config
+    const layoutConfig = getLayoutConfig(selectedFrameId);
+    const targetCount = layoutConfig.photoCount;
 
     while (slots.length < targetCount && available.length > 0) {
       slots.push(available[slots.length % available.length]);
@@ -631,12 +615,10 @@ const MonitorContent = () => {
 
 
 
-        if (isCustomFrame) {
-          const slots = [
-            { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
-            { x: 0.038, y: 0.575, w: 0.445, h: 0.175 },
-            { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
-          ];
+        if (performance.now() - startTime < targetDuration) {
+          // Dynamic Video Rendering
+          const slots = layoutConfig.slots;
+
           slots.forEach((slot, index) => {
             if (index < videos.length) {
               const video = videos[index];
@@ -666,15 +648,6 @@ const MonitorContent = () => {
               ctx.restore();
             }
           });
-        } else {
-          const slotHeight = canvas.height / targetCount;
-          videos.forEach((video, index) => {
-            ctx.save();
-            ctx.translate(canvas.width, index * slotHeight);
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0, canvas.width, slotHeight);
-            ctx.restore();
-          });
         }
 
         // For standard transparent frames, draw overlay on top
@@ -696,8 +669,8 @@ const MonitorContent = () => {
           // Adjust font size for canvas resolution (width 1080)
           // Original was 55px for 2480w. Now 45px/2480 ~ 1.8%
           // For 1080w, size ~ 19.5px -> 20px
-          // --- USE OVERLAY_CONFIG ---
-          const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = OVERLAY_CONFIG;
+          // --- USE OVERLAY_CONFIG FROM LAYOUT ---
+          const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = layoutConfig.overlay ?? DEFAULT_OVERLAY_CONFIG;
           const textColor = FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c';
 
           // 1. Timestamp
@@ -926,32 +899,32 @@ const MonitorContent = () => {
                 }}>
                 {isCustomFrame ? (
                   <div className={`relative w-full h-full ${filterClass}`}>
-                    {[
-                      { top: '19.5%', left: '3.8%', width: '92.4%', height: '36.5%' },
-                      { top: '57.5%', left: '3.8%', width: '44.5%', height: '17.5%' },
-                      { top: '77.0%', left: '51.5%', width: '44.5%', height: '17.5%' },
-                    ].map((slot, index) => (
-                      <div
-                        key={index}
-                        className="absolute overflow-hidden custom-slot bg-black/5 flex items-center justify-center border border-black/5"
-                        style={{
-                          top: slot.top,
-                          left: slot.left,
-                          width: slot.width,
-                          height: slot.height,
-                        }}
-                      >
-                        {selectedPreviewImages[index] ? (
-                          <img
-                            src={selectedPreviewImages[index]!}
-                            alt={`preview-${index}`}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <span className="text-xs text-black/20 font-bold uppercase tracking-widest">Empty</span>
-                        )}
-                      </div>
-                    ))}
+                    {/* Render slots based on configuration */}
+                    {(() => {
+                      const layoutConfig = getLayoutConfig(selectedFrameId);
+                      return layoutConfig.slots.map((slot, index) => (
+                        <div
+                          key={index}
+                          className="absolute overflow-hidden custom-slot bg-black/5 flex items-center justify-center border border-black/5"
+                          style={{
+                            top: `${slot.y * 100}%`,
+                            left: `${slot.x * 100}%`,
+                            width: `${slot.w * 100}%`,
+                            height: `${slot.h * 100}%`,
+                          }}
+                        >
+                          {selectedPreviewImages[index] ? (
+                            <img
+                              src={selectedPreviewImages[index]!}
+                              alt={`preview-${index}`}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <span className="text-xs text-black/20 font-bold uppercase tracking-widest">Empty</span>
+                          )}
+                        </div>
+                      ));
+                    })()}
                   </div>
                 ) : (
                   <div className={`flex flex-col w-full h-full ${filterClass}`}>
@@ -979,38 +952,47 @@ const MonitorContent = () => {
                 )}
 
                 {/* DOM Overlay Text for Live Preview */}
-                {isCustomFrame && (
-                  <div className="absolute inset-0 pointer-events-none z-20 font-[Courier,monospace] font-bold" style={{ lineHeight: 1, color: FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c' }}>
-                    {/* Timestamp */}
-                    <div className="absolute flex items-start justify-end pr-[1%]"
-                      style={{
-                        fontSize: `${OVERLAY_CONFIG.TIMESTAMP.FONT_SIZE_PERCENT * 100}cqh`,
-                        top: `${OVERLAY_CONFIG.TIMESTAMP.TOP_PERCENT * 100}%`,
-                        left: `${OVERLAY_CONFIG.TIMESTAMP.LEFT_PERCENT * 100}%`,
-                        width: `${OVERLAY_CONFIG.TIMESTAMP.WIDTH_PERCENT * 100}%`
-                      }}>
-                      {(() => {
-                        const now = new Date();
-                        const hours = now.getHours().toString().padStart(2, '0');
-                        const minutes = now.getMinutes().toString().padStart(2, '0');
-                        const day = now.getDate().toString().padStart(2, '0');
-                        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-                        const year = now.getFullYear();
-                        return `${hours}h${minutes},${day}/${month}/${year}`;
-                      })()}
+                {isCustomFrame && (() => {
+                  const currentOverlayConfig = getLayoutConfig(selectedFrameId).overlay ?? DEFAULT_OVERLAY_CONFIG;
+                  const { TIMESTAMP, MESSAGE } = currentOverlayConfig;
+
+                  return (
+                    <div className="absolute inset-0 pointer-events-none z-20" style={{ lineHeight: 1, color: FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c' }}>
+                      {/* Timestamp */}
+                      <div className="absolute flex items-start justify-end pr-[1%]"
+                        style={{
+                          fontFamily: TIMESTAMP.FONT_FAMILY,
+                          fontStyle: TIMESTAMP.FONT_STYLE || 'normal',
+                          fontSize: `${TIMESTAMP.FONT_SIZE_PERCENT * 100}cqh`,
+                          top: `${TIMESTAMP.TOP_PERCENT * 100}%`,
+                          left: `${TIMESTAMP.LEFT_PERCENT * 100}%`,
+                          width: `${TIMESTAMP.WIDTH_PERCENT * 100}%`
+                        }}>
+                        {(() => {
+                          const now = new Date();
+                          const hours = now.getHours().toString().padStart(2, '0');
+                          const minutes = now.getMinutes().toString().padStart(2, '0');
+                          const day = now.getDate().toString().padStart(2, '0');
+                          const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                          const year = now.getFullYear();
+                          return `${hours}h${minutes},${day}/${month}/${year}`;
+                        })()}
+                      </div>
+                      {/* Message */}
+                      <div className="absolute flex items-start justify-center text-center"
+                        style={{
+                          fontFamily: MESSAGE.FONT_FAMILY,
+                          fontStyle: MESSAGE.FONT_STYLE || 'normal',
+                          fontSize: `${MESSAGE.FONT_SIZE_PERCENT * 100}cqh`,
+                          top: `${MESSAGE.TOP_PERCENT * 100}%`,
+                          left: `${MESSAGE.LEFT_PERCENT * 100}%`,
+                          width: `${MESSAGE.WIDTH_PERCENT * 100}%`
+                        }}>
+                        {customMessage || 'itmedia'}
+                      </div>
                     </div>
-                    {/* Message */}
-                    <div className="absolute flex items-start justify-center text-center"
-                      style={{
-                        fontSize: `${OVERLAY_CONFIG.MESSAGE.FONT_SIZE_PERCENT * 100}cqh`,
-                        top: `${OVERLAY_CONFIG.MESSAGE.TOP_PERCENT * 100}%`,
-                        left: `${OVERLAY_CONFIG.MESSAGE.LEFT_PERCENT * 100}%`,
-                        width: `${OVERLAY_CONFIG.MESSAGE.WIDTH_PERCENT * 100}%`
-                      }}>
-                      {customMessage || 'itmedia'}
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Signature Overlay */}
                 {signatureData && (
