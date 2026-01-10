@@ -17,16 +17,19 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-3': null,
 
 
-  'frame-danang': '/frame-da-nang-1.png',
-  'frame-bao-xuan': '/frame-bao-xuan-1.png',
-  'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan-1.png',
+  'frame-danang': '/frame-da-nang.png',
+  'frame-bao-xuan': '/frame-bao-xuan.png',
+  'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
   'frame-final-1': '/frame-final-1.png',
-  'frame-cuoi-1': '/frame-cuoi-1-1.png',
+  'frame-cuoi-1': '/frame-cuoi-1.png',
   'frame-cuoi-2': '/frame-cuoi-2.png',
   'frame-cuoi-3': '/frame-cuoi-3.png',
   'frame-quan-su': '/frame-quan-su.png',
   'frame-lich-xanh-duong': '/frame-lich-xanh-duong.png',
-  'frame-lich-hong': '/frame-lich-hong.png'
+  'frame-lich-hong': '/frame-lich-hong.png',
+  'frame-lich-xanh': '/frame-lich-xanh.png',
+  'frame-lich-xam': '/frame-lich-xam.png',
+  'frame-lich-den': '/frame-lich-den.png'
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -52,8 +55,12 @@ const FRAME_TEXT_COLORS: Record<string, string> = {
   'frame-cuoi-3': '#ffffffff',
   'frame-quan-su': '#4e6f39',
   'frame-lich-xanh-duong': '#0072f4ff',
-  'frame-lich-hong': '#000000ff'
+  'frame-lich-hong': '#000000ff',
+  'frame-lich-xanh': '#000000ff',
+  'frame-lich-xam': '#000000ff',
+  'frame-lich-den': '#ffffffff'
 };
+
 
 // --- OVERLAY CONFIG MOVED TO layouts.ts ---
 
@@ -281,7 +288,7 @@ const MonitorContent = () => {
 
   const filterClass = FILTER_CLASS_MAP[selectedFilter] ?? '';
 
-  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong'].includes(selectedFrameId);
+  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den'].includes(selectedFrameId);
 
   const composeStripImage = useCallback(async () => {
     const selectedBlobs = selectedPhotoIndices
@@ -393,7 +400,7 @@ const MonitorContent = () => {
       }
 
       // FIX: Manually shift Timestamp right for 'frame-lich-xanh-duong' only in Export to match printed expectation
-      if (selectedFrameId === 'frame-lich-xanh-duong' || selectedFrameId === 'frame-lich-hong') {
+      if (selectedFrameId === 'frame-lich-xanh-duong' || selectedFrameId === 'frame-lich-hong' || selectedFrameId === 'frame-lich-xanh' || selectedFrameId === 'frame-lich-xam' || selectedFrameId === 'frame-lich-den') {
         tsX += canvas.width * 0.03;
       }
 
@@ -695,7 +702,7 @@ const MonitorContent = () => {
           }
 
           // FIX: Manually shift Timestamp right for specific frames in Export/Video to match printed expectation
-          if (selectedFrameId === 'frame-lich-xanh-duong' || selectedFrameId === 'frame-lich-hong') {
+          if (selectedFrameId === 'frame-lich-xanh-duong' || selectedFrameId === 'frame-lich-hong' || selectedFrameId === 'frame-lich-xanh' || selectedFrameId === 'frame-lich-xam' || selectedFrameId === 'frame-lich-den') {
             tsX += canvas.width * 0.03;
           }
 

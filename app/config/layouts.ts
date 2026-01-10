@@ -76,7 +76,7 @@ export const LAYOUTS: Record<string, LayoutConfig> = {
     'frame-lich-xanh-duong': {
         frameId: 'frame-lich-xanh-duong',
         photoCount: 2,
-        captureCount: 4,
+        captureCount: 6,
         slots: [
             { x: 0.032, y: 0.190, w: 0.450, h: 0.195 }, // Left Frame
             { x: 0.512, y: 0.190, w: 0.450, h: 0.195 }, // Right Frame
@@ -98,6 +98,60 @@ export const LAYOUTS: Record<string, LayoutConfig> = {
                 WIDTH_PERCENT: 0.25,
                 TOP_PERCENT: 0.164,
 
+                FONT_FAMILY: '"SVN-Linux-Libertine", serif',
+                FONT_STYLE: 'italic',
+                MAX_WORDS: 22,
+            },
+        }
+    },
+    'frame-lich-xam': {
+        frameId: 'frame-lich-xam',
+        photoCount: 2,
+        captureCount: 6,
+        slots: [
+            { x: 0.032, y: 0.190, w: 0.450, h: 0.195 }, // Left Frame
+            { x: 0.512, y: 0.190, w: 0.450, h: 0.195 }, // Right Frame
+        ],
+        overlay: {
+            ...DEFAULT_OVERLAY_CONFIG,
+            TIMESTAMP: {
+                ...DEFAULT_OVERLAY_CONFIG.TIMESTAMP,
+                LEFT_PERCENT: 0.17,
+                FONT_FAMILY: '"SVN-Linux-Libertine", serif',
+                FONT_STYLE: 'italic',
+            },
+            MESSAGE: {
+                ...DEFAULT_OVERLAY_CONFIG.MESSAGE,
+                LEFT_PERCENT: 0.5,
+                WIDTH_PERCENT: 0.25,
+                TOP_PERCENT: 0.164,
+                FONT_FAMILY: '"SVN-Linux-Libertine", serif',
+                FONT_STYLE: 'italic',
+                MAX_WORDS: 22,
+            },
+        }
+    },
+    'frame-lich-den': {
+        frameId: 'frame-lich-den',
+        photoCount: 2,
+        captureCount: 6,
+        slots: [
+            { x: 0.032, y: 0.190, w: 0.450, h: 0.195 }, // Left Frame
+            { x: 0.512, y: 0.190, w: 0.450, h: 0.195 }, // Right Frame
+        ],
+        overlay: {
+            ...DEFAULT_OVERLAY_CONFIG,
+            TIMESTAMP: {
+                ...DEFAULT_OVERLAY_CONFIG.TIMESTAMP,
+                LEFT_PERCENT: 0.17,
+                FONT_FAMILY: '"SVN-Linux-Libertine", serif',
+                FONT_STYLE: 'italic',
+            },
+            MESSAGE: {
+                ...DEFAULT_OVERLAY_CONFIG.MESSAGE,
+                LEFT_PERCENT: 0.5,
+                WIDTH_PERCENT: 0.25,
+                TOP_PERCENT: 0.164,
                 FONT_FAMILY: '"SVN-Linux-Libertine", serif',
                 FONT_STYLE: 'italic',
                 MAX_WORDS: 22,
@@ -132,7 +186,39 @@ export const LAYOUTS: Record<string, LayoutConfig> = {
             },
             EXPORT_CONFIG: {
                 ...DEFAULT_OVERLAY_CONFIG.EXPORT_CONFIG,
-                FONT_SCALE: 1.0, // Increase scale significantly for this font
+                FONT_SCALE: 1.5, // Increase scale significantly for this font
+            }
+        }
+    },
+    'frame-lich-xanh': {
+        frameId: 'frame-lich-xanh',
+        photoCount: 4,
+        captureCount: 6,
+        slots: [
+            { x: 0.040, y: 0.292, w: 0.425, h: 0.162 }, // Frame 1
+            { x: 0.040, y: 0.467, w: 0.425, h: 0.162 }, // Frame 2
+            { x: 0.040, y: 0.642, w: 0.425, h: 0.162 }, // Frame 3
+            { x: 0.040, y: 0.817, w: 0.425, h: 0.162 }, // Frame 4
+        ],
+        overlay: {
+            ...DEFAULT_OVERLAY_CONFIG,
+            TIMESTAMP: {
+                ...DEFAULT_OVERLAY_CONFIG.TIMESTAMP,
+                FONT_FAMILY: '"SVN-Cookies", serif',
+                TOP_PERCENT: 0.256,
+                LEFT_PERCENT: -0.006,
+            },
+            MESSAGE: {
+                ...DEFAULT_OVERLAY_CONFIG.MESSAGE,
+                FONT_FAMILY: '"SVN-Cookies", serif',
+                TOP_PERCENT: 0.255,
+                LEFT_PERCENT: 0.33,
+                WIDTH_PERCENT: 0.2,
+                MAX_WORDS: 14,
+            },
+            EXPORT_CONFIG: {
+                ...DEFAULT_OVERLAY_CONFIG.EXPORT_CONFIG,
+                FONT_SCALE: 1.5,
             }
         }
     },

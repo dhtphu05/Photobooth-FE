@@ -24,6 +24,9 @@ const FRAME_OPTIONS = [
   { id: 'frame-quan-su', label: 'Quân sự', image: '/frame-quan-su.png' },
   { id: 'frame-lich-xanh-duong', label: 'Lịch xanh dương', image: '/frame-lich-xanh-duong.png' },
   { id: 'frame-lich-hong', label: 'Lịch hồng', image: '/frame-lich-hong.png' },
+  { id: 'frame-lich-xanh', label: 'Lịch xanh', image: '/frame-lich-xanh.png' },
+  { id: 'frame-lich-xam', label: 'Lịch xám', image: '/frame-lich-xam.png' },
+  { id: 'frame-lich-den', label: 'Lịch đen', image: '/frame-lich-den.png' },
 
 ];
 const FILTER_OPTIONS = [
