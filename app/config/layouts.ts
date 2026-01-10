@@ -104,6 +104,38 @@ export const LAYOUTS: Record<string, LayoutConfig> = {
             },
         }
     },
+    'frame-lich-hong': {
+        frameId: 'frame-lich-hong',
+        photoCount: 4,
+        captureCount: 6, // Capture 6, select 4
+        slots: [
+            { x: 0.040, y: 0.292, w: 0.425, h: 0.162 }, // Frame 1
+            { x: 0.040, y: 0.467, w: 0.425, h: 0.162 }, // Frame 2
+            { x: 0.040, y: 0.642, w: 0.425, h: 0.162 }, // Frame 3
+            { x: 0.040, y: 0.817, w: 0.425, h: 0.162 }, // Frame 4
+        ],
+        overlay: {
+            ...DEFAULT_OVERLAY_CONFIG,
+            TIMESTAMP: {
+                ...DEFAULT_OVERLAY_CONFIG.TIMESTAMP,
+                FONT_FAMILY: '"SVN-Cookies", serif',
+                TOP_PERCENT: 0.256, // Moved down slightly from default 0.165
+                LEFT_PERCENT: -0.006, // Align roughly with left frames
+            },
+            MESSAGE: {
+                ...DEFAULT_OVERLAY_CONFIG.MESSAGE,
+                FONT_FAMILY: '"SVN-Cookies", serif',
+                TOP_PERCENT: 0.255, // Moved down slightly from default 0.165
+                LEFT_PERCENT: 0.33, // Align roughly with empty space on right
+                WIDTH_PERCENT: 0.2,
+                MAX_WORDS: 14,
+            },
+            EXPORT_CONFIG: {
+                ...DEFAULT_OVERLAY_CONFIG.EXPORT_CONFIG,
+                FONT_SCALE: 1.0, // Increase scale significantly for this font
+            }
+        }
+    },
     // Default fallback for other frames that need 3 photos
     'default_3_photo': {
         frameId: 'default_3_photo',

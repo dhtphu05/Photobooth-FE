@@ -23,6 +23,7 @@ const FRAME_OPTIONS = [
   { id: 'frame-cuoi-3', label: 'Cuối 3', image: '/frame-cuoi-3.png' },
   { id: 'frame-quan-su', label: 'Quân sự', image: '/frame-quan-su.png' },
   { id: 'frame-lich-xanh-duong', label: 'Lịch xanh dương', image: '/frame-lich-xanh-duong.png' },
+  { id: 'frame-lich-hong', label: 'Lịch hồng', image: '/frame-lich-hong.png' },
 
 ];
 const FILTER_OPTIONS = [

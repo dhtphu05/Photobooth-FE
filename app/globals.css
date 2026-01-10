@@ -3,6 +3,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant dark (&:is(.dark *));
+
+@font-face {
+  font-family: 'SVN-Linux-Libertine';
+  src: url('/fonts/SVN-Linux Libertine.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SVN-Linux-Libertine';
+  src: url('/fonts/SVN-Linux Libertine Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'SVN-Cookies';
+  src: url('/fonts/SVN-Cookies.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* Monochrome minimalist color system */
 :root {
   --background: 255 255 255;

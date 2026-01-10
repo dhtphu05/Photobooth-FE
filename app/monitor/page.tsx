@@ -25,7 +25,8 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-cuoi-2': '/frame-cuoi-2.png',
   'frame-cuoi-3': '/frame-cuoi-3.png',
   'frame-quan-su': '/frame-quan-su.png',
-  'frame-lich-xanh-duong': '/frame-lich-xanh-duong.png'
+  'frame-lich-xanh-duong': '/frame-lich-xanh-duong.png',
+  'frame-lich-hong': '/frame-lich-hong.png'
 };
 
 const FILTER_CLASS_MAP: Record<string, string> = {
@@ -51,6 +52,7 @@ const FRAME_TEXT_COLORS: Record<string, string> = {
   'frame-cuoi-3': '#ffffffff',
   'frame-quan-su': '#4e6f39',
   'frame-lich-xanh-duong': '#0072f4ff',
+  'frame-lich-hong': '#000000ff'
 };
 
 // --- OVERLAY CONFIG MOVED TO layouts.ts ---
@@ -279,7 +281,7 @@ const MonitorContent = () => {
 
   const filterClass = FILTER_CLASS_MAP[selectedFilter] ?? '';
 
-  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong'].includes(selectedFrameId);
+  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong'].includes(selectedFrameId);
 
   const composeStripImage = useCallback(async () => {
     const selectedBlobs = selectedPhotoIndices
@@ -391,7 +393,7 @@ const MonitorContent = () => {
       }
 
       // FIX: Manually shift Timestamp right for 'frame-lich-xanh-duong' only in Export to match printed expectation
-      if (selectedFrameId === 'frame-lich-xanh-duong') {
+      if (selectedFrameId === 'frame-lich-xanh-duong' || selectedFrameId === 'frame-lich-hong') {
         tsX += canvas.width * 0.03;
       }
 
@@ -675,8 +677,10 @@ const MonitorContent = () => {
 
           // 1. Timestamp
           // Apply FONT_SCALE for export
+          // Apply FONT_SCALE for export
           const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
-          ctx.font = `bold ${tsFontSize}px "Courier New", Courier, monospace`;
+          const tsFontStyle = TIMESTAMP.FONT_STYLE || 'normal';
+          ctx.font = `${tsFontStyle} ${tsFontSize}px ${TIMESTAMP.FONT_FAMILY}`;
           ctx.fillStyle = textColor;
           ctx.textBaseline = 'top';
           ctx.textAlign = TIMESTAMP.ALIGN;
@@ -689,6 +693,12 @@ const MonitorContent = () => {
           } else {
             tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
           }
+
+          // FIX: Manually shift Timestamp right for specific frames in Export/Video to match printed expectation
+          if (selectedFrameId === 'frame-lich-xanh-duong' || selectedFrameId === 'frame-lich-hong') {
+            tsX += canvas.width * 0.03;
+          }
+
           // Apply TOP_OFFSET_PERCENT for export
           const tsY = (TIMESTAMP.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
           ctx.fillText(timestampText, tsX, tsY);
@@ -696,7 +706,8 @@ const MonitorContent = () => {
           // 2. Message
           // Apply FONT_SCALE for export
           const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
-          ctx.font = `bold ${msgFontSize}px "Courier New", Courier, monospace`;
+          const msgFontStyle = MESSAGE.FONT_STYLE || 'normal';
+          ctx.font = `${msgFontStyle} ${msgFontSize}px ${MESSAGE.FONT_FAMILY}`;
           ctx.textAlign = MESSAGE.ALIGN;
 
           let msgX = 0;
