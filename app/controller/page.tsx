@@ -27,6 +27,7 @@ const FRAME_OPTIONS = [
   { id: 'frame-lich-xanh', label: 'Lịch xanh', image: '/frame-lich-xanh.png' },
   { id: 'frame-lich-xam', label: 'Lịch xám', image: '/frame-lich-xam.png' },
   { id: 'frame-lich-den', label: 'Lịch đen', image: '/frame-lich-den.png' },
+  {id: 'frame-xtn', label: "Xuân tình nguyện", image: '/frame-xtn.png'},
 
 ];
 const FILTER_OPTIONS = [

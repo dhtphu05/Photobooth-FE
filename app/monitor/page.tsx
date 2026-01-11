@@ -29,9 +29,10 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-lich-hong': '/frame-lich-hong.png',
   'frame-lich-xanh': '/frame-lich-xanh.png',
   'frame-lich-xam': '/frame-lich-xam.png',
-  'frame-lich-den': '/frame-lich-den.png'
+  'frame-lich-den': '/frame-lich-den.png',
+  'frame-xtn':'/frame-xtn.png'
 };
-
+  
 const FILTER_CLASS_MAP: Record<string, string> = {
   normal: '',
   bw: 'grayscale',
@@ -58,7 +59,8 @@ const FRAME_TEXT_COLORS: Record<string, string> = {
   'frame-lich-hong': '#000000ff',
   'frame-lich-xanh': '#000000ff',
   'frame-lich-xam': '#000000ff',
-  'frame-lich-den': '#ffffffff'
+  'frame-lich-den': '#ffffffff',
+  'frame-xtn':'#ffffffff'
 };
 
 
@@ -288,7 +290,7 @@ const MonitorContent = () => {
 
   const filterClass = FILTER_CLASS_MAP[selectedFilter] ?? '';
 
-  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den'].includes(selectedFrameId);
+  const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den', 'frame-xtn'].includes(selectedFrameId);
 
   const composeStripImage = useCallback(async () => {
     const selectedBlobs = selectedPhotoIndices
