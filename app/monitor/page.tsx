@@ -17,7 +17,7 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-3': null,
 
 
-  'frame-danang': '/frame-da-nang.png',
+  'frame-danang': '/frame-trinh.png',
   'frame-bao-xuan': '/frame-bao-xuan.png',
   'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
   'frame-final-1': '/frame-final-1.png',
@@ -426,7 +426,7 @@ const MonitorContent = () => {
       }
       const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
-      const message = customMessage || 'itmedia';
+      const message = customMessage || 'TrinhCaPhe';
       ctx.fillText(message, msgX, msgY);
 
       // 3. Signature
@@ -730,7 +730,7 @@ const MonitorContent = () => {
           // Apply TOP_OFFSET_PERCENT for export
           const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
-          const message = customMessage || 'itmedia';
+          const message = customMessage || 'TrinhCaPhe';
           ctx.fillText(message, msgX, msgY);
 
           // 3. Signature
@@ -1008,7 +1008,7 @@ const MonitorContent = () => {
                           left: `${MESSAGE.LEFT_PERCENT * 100}%`,
                           width: `${MESSAGE.WIDTH_PERCENT * 100}%`
                         }}>
-                        {customMessage || 'itmedia'}
+                        {customMessage || 'TrinhCaPhe'}
                       </div>
                     </div>
                   );
