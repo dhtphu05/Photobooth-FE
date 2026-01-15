@@ -55,7 +55,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const [photoPreviews, setPhotoPreviews] = useState<(string | null)[]>(Array(MAX_TOTAL_SHOTS).fill(null));
   const [selectedPhotoIndices, setSelectedPhotoIndices] = useState<number[]>([]);
   const [capturedCount, setCapturedCount] = useState(0);
-  const [selectedFrameId, setSelectedFrameId] = useState('frame-bao-xuan');
+  const [selectedFrameId, setSelectedFrameId] = useState('frame-danang');
   const [selectedFilter, setSelectedFilter] = useState('normal');
   const [customMessage, setCustomMessageState] = useState('');
   const [captureRequestId, setCaptureRequestId] = useState<string | null>(null);
@@ -77,7 +77,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setSelectedPhotoIndices([]);
     setRawPhotos(Array(MAX_TOTAL_SHOTS).fill(null));
     setPhotoPreviews(Array(MAX_TOTAL_SHOTS).fill(null));
-    setSelectedFrameId('frame-bao-xuan');
+    setSelectedFrameId('frame-danang');
     setSelectedFilter('normal');
     setCustomMessageState('');
     setRawVideoClips(Array(MAX_TOTAL_SHOTS).fill(null));
