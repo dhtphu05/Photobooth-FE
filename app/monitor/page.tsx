@@ -426,7 +426,7 @@ const MonitorContent = () => {
       }
       const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
-      const message = customMessage || 'TrinhCaPhe';
+      const message = customMessage || 'XTN26';
       ctx.fillText(message, msgX, msgY);
 
       // 3. Signature
@@ -1008,7 +1008,7 @@ const MonitorContent = () => {
                           left: `${MESSAGE.LEFT_PERCENT * 100}%`,
                           width: `${MESSAGE.WIDTH_PERCENT * 100}%`
                         }}>
-                        {customMessage || 'TrinhCaPhe'}
+                        {customMessage || 'XTN26'}
                       </div>
                     </div>
                   );
