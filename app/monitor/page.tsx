@@ -17,7 +17,7 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-3': null,
 
 
-  'frame-danang': '/frame-trinh.png',
+  'frame-danang': '/frame-da-nang.png',
   'frame-bao-xuan': '/frame-bao-xuan.png',
   'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
   'frame-final-1': '/frame-final-1.png',
