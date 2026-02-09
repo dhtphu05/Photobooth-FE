@@ -47,7 +47,7 @@ interface BoothContextType {
 
 const BoothContext = createContext<BoothContextType | undefined>(undefined);
 
-export const BoothProvider = ({ children }: { children: ReactNode }) => {
+export const BoothProvider = ({ children, mode = 'remote' }: { children: ReactNode, mode?: 'remote' | 'local' }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [timerDuration, setTimerDuration] = useState(5);
   const [step, setStep] = useState<BoothStep>('FRAME_SELECTION');
@@ -70,7 +70,14 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
   const currentRequiredShots = layoutConfig.photoCount;
 
   const resetSession = useCallback(() => {
-    setSessionId(null);
+    // In local mode, we might just generate a random ID for "session" simulation
+    if (mode === 'local') {
+      const mockId = `local-${Date.now()}`;
+      setSessionId(mockId);
+    } else {
+      setSessionId(null);
+    }
+
     setTimerDuration(5);
     setStep('FRAME_SELECTION');
     setCapturedCount(0);
@@ -85,11 +92,13 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setIsCapturePending(false);
     setIsProcessing(false);
     setSignatureData(null);
-  }, []);
+  }, [mode]);
 
   const [signatureData, setSignatureData] = useState<string | null>(null);
 
   useEffect(() => {
+    if (mode === 'local') return; // Skip socket listener in local mode
+
     socket.on('sync_signature', (payload: { signatureImage: string }) => {
       console.log('🔌 Socket received sync_signature:', payload ? 'Has Payload' : 'Empty');
       if (payload?.signatureImage) {
@@ -101,7 +110,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       socket.off('sync_signature');
     };
-  }, []);
+  }, [mode]);
 
 
   const setTimer = useCallback((seconds: number) => {
@@ -112,26 +121,29 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setRawPhotos(Array(MAX_TOTAL_SHOTS).fill(null));
     setPhotoPreviews(Array(MAX_TOTAL_SHOTS).fill(null));
     setRawVideoClips(Array(MAX_TOTAL_SHOTS).fill(null));
-    if (sessionId) {
+    if (mode === 'remote' && sessionId) {
       socket.emit('update_config', { sessionId, timerDuration: seconds, reset: true, step: 'CAPTURE' });
     }
-  }, [sessionId]);
+  }, [sessionId, mode]);
 
   const takeShot = useCallback(() => {
-    if (!sessionId || isCapturePending || capturedCount >= currentTotalShots) return;
+    if ((mode === 'remote' && !sessionId) || isCapturePending || capturedCount >= currentTotalShots) return;
     const requestId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     setIsCapturePending(true);
     setCaptureRequestId(requestId);
-    socket.emit('update_config', { sessionId, captureRequestId: requestId });
-  }, [sessionId, isCapturePending, capturedCount, currentTotalShots]);
+
+    if (mode === 'remote' && sessionId) {
+      socket.emit('update_config', { sessionId, captureRequestId: requestId });
+    }
+  }, [sessionId, isCapturePending, capturedCount, currentTotalShots, mode]);
 
   const acknowledgeCapture = useCallback(() => {
     setIsCapturePending(false);
     setCaptureRequestId(null);
-    if (sessionId) {
+    if (mode === 'remote' && sessionId) {
       socket.emit('update_config', { sessionId, captureRequestId: null });
     }
-  }, [sessionId]);
+  }, [sessionId, mode]);
 
   const registerCapturedPhoto = useCallback((blob: Blob, previewUrl: string, clip?: Blob | null) => {
     // FIX: Guard against double execution
@@ -195,7 +207,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     });
 
     acknowledgeCapture();
-    if (sessionId) {
+    if (mode === 'remote' && sessionId) {
       socket.emit('photo_taken', {
         sessionId,
         image: previewUrl,
@@ -203,7 +215,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
         requestId: currentRequestId,
       });
     }
-  }, [acknowledgeCapture, sessionId, capturedCount, rawPhotos, currentTotalShots]);
+  }, [acknowledgeCapture, sessionId, capturedCount, rawPhotos, currentTotalShots, mode]);
 
   const receiveRemotePhoto = useCallback((previewUrl: string, slot?: number) => {
     let targetSlot = typeof slot === 'number' && slot >= 0 && slot < currentTotalShots ? slot : -1;
@@ -247,43 +259,45 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
         }
         updated = [...prev, index];
       }
-      if (sessionId) {
+      if (mode === 'remote' && sessionId) {
         socket.emit('update_config', { sessionId, selectedPhotoIndices: updated });
       }
       return updated;
     });
-  }, [sessionId, currentRequiredShots]);
+  }, [sessionId, currentRequiredShots, mode]);
 
   const confirmSelection = useCallback(() => {
     if (selectedPhotoIndices.length !== currentRequiredShots) return;
     setStep('REVIEW');
-    if (sessionId) {
+    if (mode === 'remote' && sessionId) {
       socket.emit('update_config', { sessionId, selectedPhotoIndices, step: 'REVIEW' });
     }
-  }, [selectedPhotoIndices, sessionId, currentRequiredShots]);
+  }, [selectedPhotoIndices, sessionId, currentRequiredShots, mode]);
 
   const setFrame = useCallback((frameId: string) => {
     setSelectedFrameId(frameId);
-    if (sessionId) {
+    if (mode === 'remote' && sessionId) {
       socket.emit('update_config', { sessionId, selectedFrameId: frameId });
     }
-  }, [sessionId]);
+  }, [sessionId, mode]);
 
   const setFilter = useCallback((filterId: string) => {
     setSelectedFilter(filterId);
-    if (sessionId) {
+    if (mode === 'remote' && sessionId) {
       socket.emit('update_config', { sessionId, selectedFilter: filterId });
     }
-  }, [sessionId]);
+  }, [sessionId, mode]);
 
   const setCustomMessage = useCallback((message: string) => {
     setCustomMessageState(message);
-    if (sessionId) {
+    if (mode === 'remote' && sessionId) {
       socket.emit('update_config', { sessionId, customMessage: message });
     }
-  }, [sessionId]);
+  }, [sessionId, mode]);
 
   useEffect(() => {
+    if (mode === 'local') return; // Skip socket listener in local mode
+
     const handleUpdate = (payload: {
       selectedFrameId?: string;
       selectedFilter?: string;
@@ -331,7 +345,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       socket.off('update_config', handleUpdate);
     };
-  }, []);
+  }, [mode]);
 
   // Auto-capture logic for continuous shooting
   useEffect(() => {
@@ -381,6 +395,7 @@ export const BoothProvider = ({ children }: { children: ReactNode }) => {
     setStep,
     setProcessing: setIsProcessing,
     resetSession,
+    setSessionId,
   }), [
     sessionId,
     timerDuration,
