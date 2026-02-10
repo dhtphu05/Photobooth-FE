@@ -248,3 +248,20 @@ export const getLayoutConfig = (frameId: string): LayoutConfig => {
         frameId: frameId,
     };
 };
+
+export const FRAME_ASSETS: Record<string, string> = {
+    'frame-danang': '/frame-da-nang.png',
+    'frame-bao-xuan': '/frame-bao-xuan.png',
+    'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
+    'frame-final-1': '/frame-final.png',
+    'frame-cuoi-1': '/frame-cuoi-1.png',
+    'frame-cuoi-2': '/frame-cuoi-2.png',
+    'frame-cuoi-3': '/frame-cuoi-3.png',
+    'frame-quan-su': '/frame-quan-su.png',
+    'frame-lich-xanh-duong': '/frame-lich-xanh-duong.png',
+    'frame-lich-hong': '/frame-lich-hong.png',
+    'frame-lich-xanh': '/frame-lich-xanh.png',
+    'frame-lich-xam': '/frame-lich-xam.png',
+    'frame-lich-den': '/frame-lich-den.png',
+    'frame-xtn': '/frame-xtn.png',
+};
