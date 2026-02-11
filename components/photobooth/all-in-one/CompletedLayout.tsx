@@ -44,6 +44,33 @@ export const CompletedLayout = () => {
 
     console.log('[CompletedLayout] Statuses:', { isStripGenerating, videoStatus, uploadState });
 
+    // Helper to mirror a blob (image)
+    const mirrorImageBlob = async (originalBlob: Blob): Promise<Blob> => {
+        if (typeof window === 'undefined') return originalBlob;
+        try {
+            const bitmap = await createImageBitmap(originalBlob);
+            const canvas = document.createElement('canvas');
+            canvas.width = bitmap.width;
+            canvas.height = bitmap.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return originalBlob;
+
+            // Flip horizontally
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(bitmap, 0, 0);
+
+            return new Promise((resolve) => {
+                canvas.toBlob((b) => {
+                    resolve(b || originalBlob);
+                }, originalBlob.type || 'image/jpeg', 0.95);
+            });
+        } catch (e) {
+            console.error("Failed to mirror image", e);
+            return originalBlob;
+        }
+    };
+
     // Master Upload Logic
     useEffect(() => {
         // 1. Wait for ALL generation to finish
@@ -113,20 +140,25 @@ export const CompletedLayout = () => {
                 }
 
                 // C. Upload Selected Originals (IMPORTANT for Share Page)
-                selectedPhotoIndices.forEach((index) => {
+                // Use Promise.all to map/mirror concurrently
+                const originalUploadPromises = selectedPhotoIndices.map(async (index) => {
                     const blob = rawPhotos[index];
                     if (blob) {
+                        // Mirror the blob before uploading
+                        const mirroredBlob = await mirrorImageBlob(blob);
+
                         // Keep original filename if possible, or generic
-                        const file = new File([blob], `original-${index}.jpg`, { type: 'image/jpeg' });
-                        uploadPromises.push(
-                            uploadMedia({
-                                id: sessionId,
-                                data: { file },
-                                params: { type: 'ORIGINAL' }
-                            }).then(updateProgress)
-                        );
+                        const file = new File([mirroredBlob], `original-${index}.jpg`, { type: 'image/jpeg' });
+                        return uploadMedia({
+                            id: sessionId,
+                            data: { file },
+                            params: { type: 'ORIGINAL' }
+                        }).then(updateProgress);
                     }
                 });
+
+                // Add these promises to the main list
+                uploadPromises.push(...originalUploadPromises);
 
                 // D. Upload Signature (Optional but good for completeness)
                 if (signatureData) {
