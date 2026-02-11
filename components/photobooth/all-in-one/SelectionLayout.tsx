@@ -3,13 +3,6 @@ import { Button } from '@/components/ui/button';
 import { getLayoutConfig } from '@/app/config/layouts';
 import { useEffect, useRef, useState } from 'react';
 
-// Reuse FRAME_OPTIONS from shared location or redefine
-const FRAME_OPTIONS = [
-    { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang.png' },
-    { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/frame-bao-xuan.png' },
-    // ... add all frames from main page
-];
-
 const FRAME_ASSETS: Record<string, string> = {
     'frame-danang': '/frame-da-nang.png',
     'frame-bao-xuan': '/frame-bao-xuan.png',
@@ -45,32 +38,22 @@ export const SelectionLayout = () => {
             if (!ctx) return;
 
             // Determine Canvas Size (High Res)
-            const isCustomFrame = true; // Use logic from layouts if needed
             const frameWidth = 2480;
             const frameHeight = 3508;
 
-            canvas.width = frameWidth / 4; // Scale down for valid UI preview performance
+            canvas.width = frameWidth / 4;
             canvas.height = frameHeight / 4;
-            const scale = 0.25;
 
             // Draw Background
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Prepare selected photos for available slots
-            // Logic: Fill available slots with selected photos in order
             const layoutConfig = getLayoutConfig(selectedFrameId);
             const slots = layoutConfig.slots;
 
-            // Which photos to show? 
-            // - If user has selected photos: Show them in order.
-            // - If user hasn't selected enough: Show placeholders OR populate with first N photos?
-            // "Display preview fill into frame like flow old" -> Old flow shows selected photos filling the strip.
-
             // Get selected photos (images)
             const activeIndices = selectedPhotoIndices.length > 0 ? selectedPhotoIndices : [];
-            // If none selected, maybe show blank slots? Or show the first N captured?
-            // Let's show selected, if empty show nothing in slots.
 
             const inputs = await Promise.all(activeIndices.map(async (idx) => {
                 const src = photoPreviews[idx];
@@ -96,28 +79,15 @@ export const SelectionLayout = () => {
                 const dstRatio = dw / dh;
                 let sx = 0, sy = 0, sw = img.width, sh = img.height;
                 if (srcRatio > dstRatio) {
-                    // Source is wider -> Buffer X
                     sw = img.height * dstRatio;
                     sx = (img.width - sw) / 2;
                 }
                 else {
-                    // Source is taller -> Buffer Y
                     sh = img.width / dstRatio;
                     sy = (img.height - sh) / 2;
                 }
 
-                // Note: Capture was flipped? If preview is flipped, we need to handle flip here?
-                // Usually external previews are already consistent. If `transform scale-x-[-1]` is used in CSS,
-                // the raw image is mirrored. Canvas drawImage draws raw. 
-                // If raw is mirrored, we draw mirrored. If raw is normal, we draw normal.
-                // Monitor compose logic usually flips it back if needed or assumes user wants 'mirror' self view but 'normal' print.
-                // For simplified preview, let's just draw.
-
                 ctx.save();
-                // Scale -1, 1 translates context if we want to flip. 
-                // Assuming standard "selfie" behavior: We want final print to be mirrored (like seeing in mirror) OR true life?
-                // Photobooths usually print what you see on screen (mirror).
-                // To draw mirror on canvas:
                 ctx.translate(dx + dw, dy);
                 ctx.scale(-1, 1);
                 ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
@@ -144,69 +114,86 @@ export const SelectionLayout = () => {
 
 
     return (
-        <div className="flex h-full bg-gray-50">
-            {/* Left: Large Preview (Filled Frame) */}
-            <div className="flex-[3] relative bg-gray-200 flex items-center justify-center p-8 overflow-hidden">
+        <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+            {/* Top: Large Preview (Filled Frame) - Centered */}
+            <div className="flex-1 relative bg-gray-100 flex items-center justify-center p-4 overflow-hidden shadow-inner min-h-0">
                 <canvas ref={canvasRef} className="hidden" /> {/* Hidden canvas for processing */}
 
                 {previewUrl ? (
                     <img
                         src={previewUrl}
-                        className="max-h-full max-w-full object-contain shadow-2xl bg-white"
+                        className="h-full w-auto object-contain shadow-xl bg-white rounded-lg"
                         alt="Filled Preview"
                     />
                 ) : (
-                    <div className="text-gray-400 font-medium text-lg">Đang tạo bản xem trước...</div>
+                    <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
+                        <div className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
+                    </div>
                 )}
-                <div className="absolute top-6 left-6 bg-black/60 text-white px-4 py-2 rounded-full font-medium backdrop-blur-sm z-10">
-                    Xem trước bố cục
-                </div>
             </div>
 
-            {/* Right: Selection Grid */}
-            <div className="flex-[2] flex flex-col p-8 bg-white border-l border-gray-200 shadow-xl z-10 w-full max-w-md">
-                <div className="mb-8">
-                    <h2 className="text-3xl font-bold mb-2">Chọn ảnh ưng ý</h2>
-                    <p className="text-muted-foreground">Vui lòng chọn <span className="font-bold text-black">{requiredShots}</span> tập ảnh đẹp nhất để in.</p>
+            {/* Bottom: Selection Grid & Actions - Scrollable if needed */}
+            <div className="flex-shrink-0 bg-white z-10 w-full relative p-4 pb-8 flex flex-col items-center shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+
+                <div className="text-center mb-4">
+                    <h2 className="text-xl font-bold text-gray-900">Chọn ảnh</h2>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 flex-1 overflow-y-auto content-start">
-                    {photoPreviews.map((preview, index) => {
-                        const isSelected = selectedPhotoIndices.includes(index);
-                        const selectionOrder = selectedPhotoIndices.indexOf(index) + 1;
+                <div className="w-full max-w-4xl flex flex-col gap-6">
+                    {/* Grid */}
+                    <div className="grid grid-cols-3 gap-4">
+                        {photoPreviews.map((preview, index) => {
+                            const isSelected = selectedPhotoIndices.includes(index);
+                            const selectionOrder = selectedPhotoIndices.indexOf(index) + 1;
 
-                        return (
-                            <button
-                                key={index}
-                                onClick={() => togglePhotoSelection(index)}
-                                className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-200 ${isSelected
-                                    ? 'ring-4 ring-black ring-offset-2 scale-[0.98]'
-                                    : 'ring-1 ring-gray-200 hover:ring-2 hover:ring-gray-300'
-                                    }`}
-                            >
-                                <img src={preview || ''} className="w-full h-full object-cover transform scale-x-[-1]" />
-                                {isSelected && (
-                                    <div className="absolute top-2 right-2 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold shadow-lg animate-in zoom-in">
-                                        {selectionOrder}
-                                    </div>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
+                            return (
+                                <button
+                                    key={index}
+                                    onClick={() => togglePhotoSelection(index)}
+                                    className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 group ${isSelected
+                                        ? 'ring-3 ring-black ring-offset-2 scale-[0.98] shadow-lg'
+                                        : 'ring-1 ring-gray-200 hover:ring-3 hover:ring-gray-300 hover:scale-[1.02] hover:shadow-md'
+                                        }`}
+                                >
+                                    {preview ? (
+                                        <img src={preview} className="w-full h-full object-cover transform scale-x-[-1]" />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">Trống</div>
+                                    )}
 
-                <div className="mt-8 pt-6 border-t border-gray-100">
-                    <div className="flex justify-between items-center mb-4">
-                        <span className="font-medium text-gray-500">Đã chọn</span>
-                        <span className="text-2xl font-bold">{selectedPhotoIndices.length} / {requiredShots}</span>
+                                    {/* Selection Indicator Overlay */}
+                                    <div className={`absolute inset-0 bg-black/10 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-10'}`} />
+
+                                    {isSelected && (
+                                        <div className="absolute top-2 right-2 w-8 h-8 bg-black text-white text-lg rounded-full flex items-center justify-center font-bold shadow-md animate-in zoom-in spin-in-12">
+                                            {selectionOrder}
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
-                    <Button
-                        onClick={confirmSelection}
-                        disabled={selectedPhotoIndices.length !== requiredShots}
-                        className="w-full h-16 text-xl font-bold rounded-xl"
-                    >
-                        Tiếp Tục
-                    </Button>
+
+                    {/* Controls Inline */}
+                    <div className="flex justify-between items-center px-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-500 font-medium">Đã chọn:</span>
+                            <span className={`text-2xl font-black ${selectedPhotoIndices.length === requiredShots ? 'text-green-600' : 'text-gray-900'}`}>
+                                {selectedPhotoIndices.length} <span className="text-gray-300 text-lg">/</span> {requiredShots}
+                            </span>
+                        </div>
+
+                        <Button
+                            onClick={confirmSelection}
+                            disabled={selectedPhotoIndices.length !== requiredShots}
+                            className={`h-12 px-8 text-lg font-bold rounded-xl transition-all duration-300 ${selectedPhotoIndices.length === requiredShots
+                                    ? 'bg-black text-white hover:bg-gray-800 hover:scale-105 shadow-xl shadow-black/20'
+                                    : 'bg-gray-200 text-gray-400'
+                                }`}
+                        >
+                            Tiếp Tục
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
