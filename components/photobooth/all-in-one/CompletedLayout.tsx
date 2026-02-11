@@ -250,99 +250,137 @@ export const CompletedLayout = () => {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col h-full max-w-7xl mx-auto w-full space-y-6 animate-in fade-in zoom-in duration-500">
+                <div className="flex flex-col h-full max-w-6xl mx-auto w-full space-y-4 animate-in fade-in zoom-in duration-500 justify-center">
 
                     {/* Header */}
                     <div className="text-center shrink-0">
-                        <div className="bg-green-100 text-green-700 p-3 rounded-full inline-block mb-2">
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                        <div className="bg-green-100 text-green-700 p-2 rounded-full inline-block mb-2">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                         </div>
-                        <h1 className="text-3xl font-extrabold text-gray-900">Hoàn Tất!</h1>
-                        <p className="text-muted-foreground">Quét mã QR bên dưới để tải hình & video</p>
+                        <h1 className="text-2xl font-extrabold text-gray-900">Hoàn Tất!</h1>
                     </div>
 
-                    {/* Main Grid: Strip vs Video */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 grow overflow-hidden min-h-0">
-                        {/* PHOTO STRIP */}
-                        <Card className="flex flex-col h-full border-2 shadow-sm">
-                            <CardHeader className="text-center py-4">
-                                <CardTitle>Photo Strip</CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex-1 flex flex-col items-center justify-center bg-gray-100/50 p-4 min-h-0">
-                                {stripUrl ? (
-                                    <div className="relative h-full w-full flex items-center justify-center">
-                                        <img
-                                            src={stripUrl}
-                                            alt="Result"
-                                            className="max-h-full max-w-full object-contain shadow-lg rounded-sm"
+                    {/* Main Content Grid - Compact Size */}
+                    <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-4 items-center">
+
+                        {/* LEFT COLUMN: QR & Controls */}
+                        <div className="lg:col-span-4 flex flex-col h-full justify-center">
+                            <div className="bg-white rounded-2xl shadow-sm border p-8 flex flex-col items-center justify-center gap-8 h-fit text-center">
+
+                                <div className="space-y-2">
+                                    <h3 className="font-bold text-3xl text-gray-800">Quét Mã QR</h3>
+                                    <p className="text-base text-gray-500">Tải ảnh rực rỡ về máy ngay!</p>
+                                </div>
+
+                                <div className="bg-white p-4 rounded-3xl shadow-inner border inline-block">
+                                    {shareUrl ? (
+                                        <QRCode
+                                            value={shareUrl}
+                                            size={200}
+                                            style={{ height: "auto", maxWidth: "100%", width: "200px" }}
+                                            viewBox={`0 0 256 256`}
                                         />
-                                    </div>
-                                ) : (
-                                    <div className="text-gray-400">Không có ảnh</div>
-                                )}
-                            </CardContent>
-                        </Card>
+                                    ) : (
+                                        <div className="w-[200px] h-[200px] bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                                            Offline
+                                        </div>
+                                    )}
+                                </div>
 
-                        {/* VIDEO RECAP */}
-                        <Card className="flex flex-col h-full border-2 shadow-sm">
-                            <CardHeader className="text-center py-4">
-                                <CardTitle>Video Recap</CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex-1 flex flex-col items-center justify-center bg-gray-100/50 p-4 min-h-0">
-                                {videoUrl ? (
-                                    <div className="relative h-full w-full flex items-center justify-center bg-black rounded-lg overflow-hidden">
-                                        <video
-                                            src={videoUrl}
-                                            autoPlay
-                                            muted
-                                            loop
-                                            playsInline
-                                            className="max-h-full max-w-full object-contain"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="text-gray-400">Không có video</div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Footer: QR & New Session */}
-                    <div className="shrink-0 bg-white p-4 rounded-xl border shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-
-                        {/* QR Section */}
-                        <div className="flex items-center gap-6">
-                            <div className="bg-white p-2 rounded-lg shadow-inner border shrink-0">
-                                {shareUrl ? (
-                                    <QRCode
-                                        value={shareUrl}
-                                        size={100}
-                                        style={{ height: "auto", maxWidth: "100%", width: "100px" }}
-                                        viewBox={`0 0 256 256`}
-                                    />
-                                ) : (
-                                    <div className="w-[100px] h-[100px] bg-gray-100 flex items-center justify-center text-xs text-gray-400 text-center">
-                                        Offline Mode
-                                    </div>
-                                )}
-                            </div>
-                            <div className="text-left">
-                                <h3 className="font-bold text-lg">Tải Ảnh Ngay</h3>
-                                <p className="text-sm text-muted-foreground w-48">Mở camera điện thoại và quét mã QR để lưu ảnh.</p>
+                                <div className="w-full space-y-4 pt-2">
+                                    
+                                    <Button
+                                        onClick={resetSession}
+                                        size="lg"
+                                        className="w-full h-14 text-lg rounded-xl shadow-md hover:shadow-lg transition-all"
+                                    >
+                                        <RefreshCcw className="mr-2 w-5 h-5" />
+                                        Chụp Lượt Mới
+                                    </Button>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex gap-4">
-                            <Button onClick={resetSession} size="lg" className="h-14 text-lg px-8 rounded-xl shadow-md hover:shadow-lg transition-all">
-                                <RefreshCcw className="mr-2 w-5 h-5" />
-                                Chụp Lượt Mới
-                            </Button>
-                        </div>
+                        {/* RIGHT COLUMN: Media Previews (Smaller Size ~50-60%) */}
+                        <div className="lg:col-span-8 h-full min-h-0 grid grid-cols-2 gap-8 items-center justify-center">
 
+                            {/* Photo Strip */}
+                            <div className="flex flex-col h-full bg-gray-100/50 rounded-3xl border-2 border-dashed border-gray-200 p-10 items-center justify-center relative">
+                                <h3 className="text-xl font-semibold text-gray-700 shrink-0 mb-4">Photo Strip</h3>
+                                <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 gap-4">
+                                    {stripUrl ? (
+                                        <>
+                                            <div className="relative w-auto h-auto max-h-[60vh] max-w-full flex items-center justify-center rounded-xl overflow-hidden shadow-xl border-[6px] border-white bg-white hover:scale-[1.02] transition-transform duration-300">
+                                                <img
+                                                    src={stripUrl}
+                                                    alt="Result"
+                                                    className="max-h-full max-w-full object-contain block"
+                                                    style={{ maxHeight: '60vh' }}
+                                                />
+                                            </div>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="shrink-0 gap-2 border-gray-300"
+                                                onClick={() => {
+                                                    const a = document.createElement('a');
+                                                    a.href = stripUrl;
+                                                    a.download = `photobooth-strip-${sessionId || 'capture'}.jpg`;
+                                                    a.click();
+                                                }}
+                                            >
+                                                <Download className="w-4 h-4" /> Tải Ảnh
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <div className="text-gray-400">Loading...</div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Video Recap */}
+                            <div className="flex flex-col h-full bg-gray-100/50 rounded-3xl border-2 border-dashed border-gray-200 p-10 items-center justify-center relative">
+                                <h3 className="text-xl font-semibold text-gray-700 shrink-0 mb-4">Video Recap</h3>
+                                <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 gap-4">
+                                    {videoUrl ? (
+                                        <>
+                                            <div className="relative w-auto h-auto max-h-[45vh] max-w-full flex items-center justify-center rounded-xl overflow-hidden shadow-xl border-[6px] border-white bg-black hover:scale-[1.02] transition-transform duration-300">
+                                                <video
+                                                    src={videoUrl}
+                                                    autoPlay
+                                                    muted
+                                                    loop
+                                                    playsInline
+                                                    className="max-h-full max-w-full object-contain block"
+                                                    style={{ maxHeight: '45vh' }}
+                                                />
+                                            </div>
+                                            {/* Optional Video Download Button for Symmetry */}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="shrink-0 gap-2 border-gray-300"
+                                                onClick={() => {
+                                                    const a = document.createElement('a');
+                                                    a.href = videoUrl;
+                                                    a.download = `photobooth-recap-${sessionId || 'capture'}.webm`;
+                                                    a.click();
+                                                }}
+                                            >
+                                                <Download className="w-4 h-4" /> Tải Video
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <div className="text-gray-400">Loading...</div>
+                                    )}
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };

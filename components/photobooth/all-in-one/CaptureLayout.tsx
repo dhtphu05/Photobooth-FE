@@ -296,7 +296,7 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
                                     {preview ? (
                                         <img
                                             src={preview}
-                                            className="object-cover w-full h-full"
+                                            className="object-cover w-full h-full scale-x-[-1]"
                                             alt={`shot-${index}`}
                                         />
                                     ) : (
