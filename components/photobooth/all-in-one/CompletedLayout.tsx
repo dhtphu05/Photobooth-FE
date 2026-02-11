@@ -33,7 +33,7 @@ export const CompletedLayout = () => {
     });
 
     // 2. Generate Video Recap
-    const { videoBlob, videoUrl, isGenerating: isVideoGenerating } = useVideoComposer({
+    const { videoBlob, videoUrl, status: videoStatus } = useVideoComposer({
         uniqueId: 'completed-video',
         rawVideoClips,
         selectedPhotoIndices,
@@ -42,10 +42,19 @@ export const CompletedLayout = () => {
         enabled: true
     });
 
+    console.log('[CompletedLayout] Statuses:', { isStripGenerating, videoStatus, uploadState });
+
     // Master Upload Logic
     useEffect(() => {
         // 1. Wait for ALL generation to finish
-        if (isStripGenerating || isVideoGenerating) {
+        // We need to wait if:
+        // - Strip is thinking
+        // - Video is generating
+        // - OR Video is 'idle' but we HAVE clips (meaning it hasn't started yet)
+        const hasVideoClips = rawVideoClips.length > 0;
+        const isVideoPending = hasVideoClips && (videoStatus === 'idle' || videoStatus === 'generating');
+
+        if (isStripGenerating || isVideoPending) {
             setUploadState('generating');
             return;
         }
@@ -170,11 +179,11 @@ export const CompletedLayout = () => {
         }
 
     }, [
-        isStripGenerating, isVideoGenerating,
+        isStripGenerating, videoStatus,
         stripBlob, videoBlob,
         sessionId, uploadState,
         selectedPhotoIndices, rawPhotos, signatureData,
-        uploadMedia, setProcessing
+        uploadMedia, setProcessing, rawVideoClips.length
     ]);
 
 
@@ -205,7 +214,7 @@ export const CompletedLayout = () => {
 
                     <div className="text-sm text-gray-500 text-center space-y-1">
                         <p>{isStripGenerating ? "Creating photo strip..." : "Photo strip ready ✅"}</p>
-                        <p>{isVideoGenerating ? "Rendering video recap..." : "Video recap ready ✅"}</p>
+                        <p>{(videoStatus === 'generating' || videoStatus === 'idle') ? "Rendering video recap..." : "Video recap ready ✅"}</p>
                     </div>
                 </div>
             ) : (

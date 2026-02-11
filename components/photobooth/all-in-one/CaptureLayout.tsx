@@ -26,6 +26,7 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
     const countdownIntervalRef = useRef<NodeJS.Timeout | number | null>(null);
     const [countdown, setCountdown] = useState<number | null>(null);
     const lastCaptureIdRef = useRef<string | null>(null);
+    const isCapturingRef = useRef(false);
 
     // --- Video Clip Recording Refs ---
     const clipRecorderRef = useRef<MediaRecorder | null>(null);
@@ -33,12 +34,21 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
 
     // 1. Start Recording Clip
     const startClipRecording = useCallback(() => {
-        if (typeof window === 'undefined' || typeof MediaRecorder === 'undefined') return;
+        if (typeof window === 'undefined' || typeof MediaRecorder === 'undefined') {
+            console.warn("MediaRecorder not supported");
+            return;
+        }
 
         // Stop existing if any
         if (clipRecorderRef.current) {
-            if (clipRecorderRef.current.state !== 'inactive') {
-                clipRecorderRef.current.stop();
+            // If exists, just null it out. We don't care about saving previous if we are starting new.
+            // But we should try to stop it properly.
+            try {
+                if (clipRecorderRef.current.state !== 'inactive') {
+                    clipRecorderRef.current.stop();
+                }
+            } catch (e) {
+                // ignore
             }
             clipRecorderRef.current = null;
         }
@@ -46,12 +56,17 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
         const videoElement = webcamRef.current?.video ?? null;
         const mediaStream = (videoElement?.srcObject as MediaStream | null) ?? null;
 
-        if (!mediaStream) return;
+        if (!mediaStream) {
+            console.warn("startClipRecording: No MediaStream available from webcam");
+            return;
+        }
 
         try {
             const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
                 ? 'video/webm;codecs=vp9'
                 : 'video/webm';
+
+            console.log("startClipRecording: Starting recorder with mimeType", mimeType);
 
             const recorder = new MediaRecorder(mediaStream, { mimeType });
             clipChunksRef.current = [];
@@ -62,10 +77,13 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
                 }
             };
 
+            // We do not set onstop here, we set it when we want to stop and collect.
+
             recorder.start();
             clipRecorderRef.current = recorder;
+            console.log("startClipRecording: Recorder started");
         } catch (error) {
-            console.warn('Unable to start clip recorder', error);
+            console.error('Unable to start clip recorder', error);
             clipRecorderRef.current = null;
             clipChunksRef.current = [];
         }
@@ -76,38 +94,56 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
         return new Promise<Blob | null>(resolve => {
             const recorder = clipRecorderRef.current;
             if (!recorder) {
+                console.warn("stopClipRecording: No active recorder found");
                 resolve(null);
                 return;
             }
             const mime = recorder.mimeType || 'video/webm';
 
-            recorder.onstop = () => {
+            // Define handler
+            const handleStop = () => {
                 const blob =
                     clipChunksRef.current.length > 0 ? new Blob(clipChunksRef.current, { type: mime }) : null;
+                console.log("stopClipRecording: Stopped. Blob size:", blob?.size ?? 0);
+                // Cleanup
                 clipRecorderRef.current = null;
                 clipChunksRef.current = [];
                 resolve(blob);
             };
 
+            recorder.onstop = handleStop;
+
             if (recorder.state !== 'inactive') {
                 recorder.stop();
             } else {
-                recorder.onstop?.(new Event('stop'));
+                // If already inactive, it might have stopped on its own or by previous call.
+                // We fire handler immediately but carefully.
+                console.log("stopClipRecording: Recorder already inactive, manually triggering resolve");
+                handleStop();
             }
         });
     }, []);
 
     // 3. Capture Function
     const performCapture = useCallback(async () => {
+        if (isCapturingRef.current) {
+            console.warn("performCapture: Already capturing, skipping duplicate call");
+            return;
+        }
+        isCapturingRef.current = true;
+
         if (!webcamRef.current) {
             acknowledgeCapture();
+            isCapturingRef.current = false;
             return;
         }
 
         let clipBlob: Blob | null = null;
+        console.log("performCapture: Start capturing...");
 
         try {
             const imageSrc = webcamRef.current.getScreenshot();
+            // Wait a tiny bit to ensure recorder has data? No, stop() flushes it.
             clipBlob = await stopClipRecording();
 
             if (imageSrc) {
@@ -121,6 +157,8 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
             console.error("Capture Failed", e);
             if (!clipBlob) await stopClipRecording();
             acknowledgeCapture();
+        } finally {
+            isCapturingRef.current = false;
         }
 
         setCountdown(null);
@@ -141,9 +179,14 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
         setCountdown(seconds);
         countdownIntervalRef.current = setInterval(() => {
             setCountdown(prev => {
+                // Guard: if execution is somehow delayed, ensure we don't double trigger
                 if (!prev || prev <= 1) {
                     if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-                    void performCapture();
+
+                    // Simple guard to prevent multiple calls from interval end
+                    if (!isCapturingRef.current) {
+                        void performCapture();
+                    }
                     return null;
                 }
                 return prev - 1;
@@ -246,8 +289,8 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
                                 <div
                                     key={index}
                                     className={`relative aspect-video rounded-xl border-4 ${isCurrentCapture
-                                            ? 'border-yellow-400 animate-pulse shadow-xl scale-105 z-10'
-                                            : 'border-black/5'
+                                        ? 'border-yellow-400 animate-pulse shadow-xl scale-105 z-10'
+                                        : 'border-black/5'
                                         } overflow-hidden bg-black/5 flex items-center justify-center transition-all duration-300`}
                                 >
                                     {preview ? (

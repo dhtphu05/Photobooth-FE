@@ -19,9 +19,9 @@ export const useVideoComposer = ({
     signatureData,
     enabled
 }: UseVideoComposerProps) => {
+    const [status, setStatus] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
     const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
-    const [isGenerating, setIsGenerating] = useState(false);
 
     // Helper to load image
     const loadImage = (src: string): Promise<HTMLImageElement> => {
@@ -35,9 +35,9 @@ export const useVideoComposer = ({
     };
 
     const generateVideo = useCallback(async () => {
-        if (!enabled || isGenerating || rawVideoClips.length === 0) return;
+        if (!enabled || status === 'generating' || status === 'success' || rawVideoClips.length === 0) return;
 
-        setIsGenerating(true);
+        setStatus('generating');
 
         try {
             const available = selectedPhotoIndices
@@ -46,7 +46,7 @@ export const useVideoComposer = ({
 
             if (available.length === 0) {
                 console.warn("No video clips available for recap");
-                setIsGenerating(false);
+                setStatus('error');
                 return;
             }
 
@@ -63,7 +63,7 @@ export const useVideoComposer = ({
             const clips = slots.slice(0, targetCount);
 
             if (typeof document === 'undefined' || typeof MediaRecorder === 'undefined') {
-                setIsGenerating(false);
+                setStatus('error');
                 return;
             }
 
@@ -127,7 +127,7 @@ export const useVideoComposer = ({
             const ctx = canvas.getContext('2d');
             if (!ctx) {
                 videos.forEach(v => URL.revokeObjectURL(v.src));
-                setIsGenerating(false);
+                setStatus('error');
                 return;
             }
 
@@ -139,7 +139,7 @@ export const useVideoComposer = ({
             } catch (e) {
                 console.error("captureStream not supported", e);
                 videos.forEach(v => URL.revokeObjectURL(v.src));
-                setIsGenerating(false);
+                setStatus('error');
                 return;
             }
 
@@ -267,20 +267,20 @@ export const useVideoComposer = ({
             const resultBlob = await recordingPromise;
             setVideoBlob(resultBlob);
             setVideoUrl(URL.createObjectURL(resultBlob));
-            setIsGenerating(false);
+            setStatus('success');
 
         } catch (error) {
             console.error("Video composition error:", error);
-            setIsGenerating(false);
+            setStatus('error');
         }
 
-    }, [enabled, isGenerating, rawVideoClips, selectedFrameId, selectedPhotoIndices, signatureData]); // Dependencies
+    }, [enabled, status, rawVideoClips, selectedFrameId, selectedPhotoIndices, signatureData]); // Dependencies
 
     useEffect(() => {
-        if (enabled && !videoBlob && !isGenerating && rawVideoClips.length > 0) {
+        if (enabled && status === 'idle' && rawVideoClips.length > 0) {
             generateVideo();
         }
-    }, [enabled, videoBlob, isGenerating, rawVideoClips.length, generateVideo]);
+    }, [enabled, status, rawVideoClips.length, generateVideo]);
 
-    return { videoBlob, videoUrl, isGenerating };
+    return { videoBlob, videoUrl, status, isGenerating: status === 'generating' };
 };
