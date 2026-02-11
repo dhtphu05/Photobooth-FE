@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBooth } from '@/context/BoothContext';
 // Import the direct API function for Promise.all usage, OR use the hook's mutateAsync
-import { useUploadSessionMedia } from '@/api/endpoints/sessions/sessions';
+import { useUploadSessionMedia, completeSession } from '@/api/endpoints/sessions/sessions';
 import { useStripComposer } from '@/hooks/useStripComposer';
 import { useVideoComposer } from '@/hooks/useVideoComposer';
 
@@ -72,7 +72,8 @@ export const CompletedLayout = () => {
             let completedCount = 0;
             const updateProgress = () => {
                 completedCount++;
-                setProgress(Math.round((completedCount / totalUploads) * 100));
+                // Cap progress at 95% until final completion
+                setProgress(Math.min(95, Math.round((completedCount / totalUploads) * 100)));
             };
 
             const uploadPromises: Promise<any>[] = [];
@@ -141,6 +142,16 @@ export const CompletedLayout = () => {
                 }
 
                 await Promise.all(uploadPromises);
+
+                // E. Mark Session as Completed (Important for backend)
+                try {
+                    await completeSession(sessionId);
+                    console.log("Session marked as completed");
+                } catch (err) {
+                    console.error("Failed to complete session", err);
+                }
+
+                setProgress(100);
                 console.log("All uploads completed successfully");
                 setUploadState('done');
                 setProcessing(false);

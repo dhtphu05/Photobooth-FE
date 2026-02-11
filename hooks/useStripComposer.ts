@@ -124,7 +124,12 @@ export const useStripComposer = ({
                         sy = (bmp.height - sh) / 2;
                     }
 
-                    ctx.drawImage(bmp, sx, sy, sw, sh, dx, dy, dw, dh);
+                    // Mirror image implementation
+                    ctx.save();
+                    ctx.translate(dx + dw, dy);
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(bmp, sx, sy, sw, sh, 0, 0, dw, dh);
+                    ctx.restore();
                 }
             });
 
