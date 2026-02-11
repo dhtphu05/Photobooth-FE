@@ -265,3 +265,22 @@ export const FRAME_ASSETS: Record<string, string> = {
     'frame-lich-den': '/frame-lich-den.png',
     'frame-xtn': '/frame-xtn.png',
 };
+
+export const FRAME_TEXT_COLORS: Record<string, string> = {
+    'frame-danang': '#a40000',
+    'frame-bao-xuan': '#4e6f39',
+    'frame-chuyen-tau': '#966725',
+    'frame-final-1': '#000000',
+    'frame-cuoi-1': '#a40000',
+    'frame-cuoi-2': '#e4f407ff',
+    'frame-cuoi-3': '#ffffffff',
+    'frame-quan-su': '#4e6f39',
+    'frame-lich-xanh-duong': '#0072f4ff',
+    'frame-lich-hong': '#000000ff',
+    'frame-lich-xanh': '#000000ff',
+    'frame-lich-xam': '#000000ff',
+    'frame-lich-den': '#ffffffff',
+    'frame-xtn': '#ffffffff',
+    // Default fallback
+    'default': '#2c2c2c',
+};
