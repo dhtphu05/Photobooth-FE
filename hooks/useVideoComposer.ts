@@ -149,7 +149,10 @@ export const useVideoComposer = ({
                 ? 'video/webm;codecs=vp9'
                 : 'video/webm';
 
-            const recorder = new MediaRecorder(stream, { mimeType });
+            const recorder = new MediaRecorder(stream, {
+                mimeType,
+                videoBitsPerSecond: 8000000 // 8 Mbps for high quality
+            });
             const chunks: Blob[] = [];
             recorder.ondataavailable = event => {
                 if (event.data?.size > 0) {

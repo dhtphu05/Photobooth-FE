@@ -68,7 +68,10 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
 
             console.log("startClipRecording: Starting recorder with mimeType", mimeType);
 
-            const recorder = new MediaRecorder(mediaStream, { mimeType });
+            const recorder = new MediaRecorder(mediaStream, {
+                mimeType,
+                videoBitsPerSecond: 8000000 // 8 Mbps for high quality
+            });
             clipChunksRef.current = [];
 
             recorder.ondataavailable = event => {
