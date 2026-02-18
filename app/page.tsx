@@ -21,12 +21,12 @@ export default function PhotoBoothApp() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           {/* Logo */}
           <motion.div className="mb-6" whileHover={{ scale: 1.05 }}>
-            <h1 className="text-7xl md:text-8xl font-bold text-black">PhotoXinhh</h1>
+            <h1 className="text-7xl md:text-8xl font-bold text-black">PhotoBooth of XuanTinhNguyen2026</h1>
             <p className="text-zinc-400 text-sm mt-2 tracking-widest">PHOTOBOOTH APP</p>
           </motion.div>
 
           <p className="text-xl md:text-2xl text-zinc-600 mb-12 leading-relaxed">
-            Monochrome Minimalist Photobooth
+            Chúc mừng năm mới 2026
             <br />
             <span className="text-black font-bold">Capture • Edit • Share</span>
           </p>
