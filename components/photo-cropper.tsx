@@ -31,12 +31,18 @@ export function PhotoCropper({
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
 
+    const [mediaSize, setMediaSize] = useState<{ width: number; height: number; naturalWidth: number; naturalHeight: number } | null>(null)
+
     const onCropChange = (crop: { x: number; y: number }) => {
         setCrop(crop)
     }
 
     const onZoomChange = (zoom: number) => {
         setZoom(zoom)
+    }
+
+    const onMediaLoaded = (mediaSize: { width: number; height: number; naturalWidth: number; naturalHeight: number }) => {
+        setMediaSize(mediaSize)
     }
 
     const onCropCompleteHandler = useCallback(
@@ -47,13 +53,27 @@ export function PhotoCropper({
     )
 
     const handleSave = async () => {
-        if (!imageSrc || !croppedAreaPixels) return
+        if (!imageSrc || !croppedAreaPixels || !mediaSize) return
 
         setIsProcessing(true)
         try {
+            // Because SelectionLayout mirrors ALL images with scale-x-[-1],
+            // we must ensure our saved blob compensates for this.
+            // Additionally, react-easy-crop coordinates are relative to the top-left of the visual element.
+            // When we want to preserve the "visual" selection in a system that mirrors everything:
+            // 1. We must Invert X to map "Visual Left" to the correct source coordinate system relative to our target flip.
+            // 2. We must toggle the flip state to produce the correct pixel orientation.
+
+            const invertedX = mediaSize.naturalWidth - croppedAreaPixels.x - croppedAreaPixels.width
+
+            const adjustedPixels = {
+                ...croppedAreaPixels,
+                x: invertedX
+            }
+
             const croppedBlob = await getCroppedImg(
                 imageSrc,
-                croppedAreaPixels,
+                adjustedPixels,
                 rotation,
                 { horizontal: !flipHorizontal, vertical: false }
             )
@@ -87,6 +107,7 @@ export function PhotoCropper({
                             onCropChange={onCropChange}
                             onCropComplete={onCropCompleteHandler}
                             onZoomChange={onZoomChange}
+                            onMediaLoaded={onMediaLoaded}
                             transform={[
                                 `translate(${crop.x}px, ${crop.y}px)`,
                                 `rotate(${rotation}deg)`,
