@@ -209,7 +209,7 @@ export default function CameraStage({ onExit }: CameraStageProps) {
             <AnimatePresence>
               {countdown !== null && (
                 <motion.div
-                  className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-30"
+                  className="absolute inset-0 flex items-center justify-center bg-black/40 z-30"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -275,9 +275,8 @@ export default function CameraStage({ onExit }: CameraStageProps) {
             {photos.map((photo, index) => (
               <motion.div
                 key={index}
-                className={`relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg cursor-pointer group ${
-                  index === activeSlot ? "ring-4 ring-primary" : ""
-                }`}
+                className={`relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg cursor-pointer group ${index === activeSlot ? "ring-4 ring-primary" : ""
+                  }`}
                 style={{
                   width: "100px",
                   background: photo ? "transparent" : "rgba(255,255,255,0.1)",

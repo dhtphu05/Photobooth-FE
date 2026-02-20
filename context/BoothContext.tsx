@@ -43,7 +43,9 @@ interface BoothContextType {
   setStep: (next: BoothStep) => void;
   setProcessing: (value: boolean) => void;
   resetSession: () => void;
+  updatePhoto: (index: number, blob: Blob, previewUrl: string) => void;
 }
+
 
 const BoothContext = createContext<BoothContextType | undefined>(undefined);
 
@@ -295,6 +297,24 @@ export const BoothProvider = ({ children, mode = 'remote' }: { children: ReactNo
     }
   }, [sessionId, mode]);
 
+  const updatePhoto = useCallback((index: number, blob: Blob, previewUrl: string) => {
+    setRawPhotos(prev => {
+      const next = [...prev];
+      if (index >= 0 && index < next.length) {
+        next[index] = blob;
+      }
+      return next;
+    });
+
+    setPhotoPreviews(prev => {
+      const next = [...prev];
+      if (index >= 0 && index < next.length) {
+        next[index] = previewUrl;
+      }
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     if (mode === 'local') return; // Skip socket listener in local mode
 
@@ -395,7 +415,7 @@ export const BoothProvider = ({ children, mode = 'remote' }: { children: ReactNo
     setStep,
     setProcessing: setIsProcessing,
     resetSession,
-    setSessionId,
+    updatePhoto,
   }), [
     sessionId,
     timerDuration,
@@ -424,6 +444,7 @@ export const BoothProvider = ({ children, mode = 'remote' }: { children: ReactNo
     setFilter,
     setCustomMessage,
     resetSession,
+    updatePhoto,
   ]);
 
   return (

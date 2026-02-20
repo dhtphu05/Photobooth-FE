@@ -2,6 +2,8 @@ import { useBooth } from '@/context/BoothContext';
 import { Button } from '@/components/ui/button';
 import { getLayoutConfig } from '@/app/config/layouts';
 import { useEffect, useRef, useState } from 'react';
+import { Pencil } from 'lucide-react';
+import { PhotoCropper } from '@/components/photo-cropper';
 
 const FRAME_ASSETS: Record<string, string> = {
     'frame-danang': '/frame-da-nang.png',
@@ -23,11 +25,13 @@ const FRAME_ASSETS: Record<string, string> = {
 export const SelectionLayout = () => {
     const {
         photoPreviews, selectedPhotoIndices, togglePhotoSelection,
-        requiredShots, confirmSelection, selectedFrameId, rawPhotos
+        requiredShots, confirmSelection, selectedFrameId, rawPhotos,
+        updatePhoto
     } = useBooth();
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
     // --- Dynamic Fill Logic ---
     useEffect(() => {
@@ -147,29 +151,44 @@ export const SelectionLayout = () => {
                             const selectionOrder = selectedPhotoIndices.indexOf(index) + 1;
 
                             return (
-                                <button
-                                    key={index}
-                                    onClick={() => togglePhotoSelection(index)}
-                                    className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 group ${isSelected
-                                        ? 'ring-3 ring-black ring-offset-2 scale-[0.98] shadow-lg'
-                                        : 'ring-1 ring-gray-200 hover:ring-3 hover:ring-gray-300 hover:scale-[1.02] hover:shadow-md'
-                                        }`}
-                                >
-                                    {preview ? (
-                                        <img src={preview} className="w-full h-full object-cover transform scale-x-[-1]" />
-                                    ) : (
-                                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">Trống</div>
-                                    )}
+                                <div key={index} className="relative group">
+                                    <button
+                                        onClick={() => togglePhotoSelection(index)}
+                                        className={`relative w-full aspect-video rounded-xl overflow-hidden transition-all duration-300 ${isSelected
+                                            ? 'ring-3 ring-black ring-offset-2 scale-[0.98] shadow-lg'
+                                            : 'ring-1 ring-gray-200 hover:ring-3 hover:ring-gray-300 hover:scale-[1.02] hover:shadow-md'
+                                            }`}
+                                    >
+                                        {preview ? (
+                                            <img src={preview} className="w-full h-full object-cover transform scale-x-[-1]" />
+                                        ) : (
+                                            <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">Trống</div>
+                                        )}
 
-                                    {/* Selection Indicator Overlay */}
-                                    <div className={`absolute inset-0 bg-black/10 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-10'}`} />
+                                        {/* Selection Indicator Overlay */}
+                                        <div className={`absolute inset-0 bg-black/10 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-10'}`} />
 
-                                    {isSelected && (
-                                        <div className="absolute top-2 right-2 w-8 h-8 bg-black text-white text-lg rounded-full flex items-center justify-center font-bold shadow-md animate-in zoom-in spin-in-12">
-                                            {selectionOrder}
-                                        </div>
+                                        {isSelected && (
+                                            <div className="absolute top-2 right-2 w-8 h-8 bg-black text-white text-lg rounded-full flex items-center justify-center font-bold shadow-md animate-in zoom-in spin-in-12">
+                                                {selectionOrder}
+                                            </div>
+                                        )}
+                                    </button>
+
+                                    {/* Edit Button */}
+                                    {preview && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setEditingIndex(index);
+                                            }}
+                                            className="absolute bottom-2 right-2 p-2 bg-white/90 hover:bg-white text-black rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 z-10"
+                                            title="Căn chỉnh ảnh"
+                                        >
+                                            <Pencil size={16} />
+                                        </button>
                                     )}
-                                </button>
+                                </div>
                             );
                         })}
                     </div>
@@ -187,8 +206,8 @@ export const SelectionLayout = () => {
                             onClick={confirmSelection}
                             disabled={selectedPhotoIndices.length !== requiredShots}
                             className={`h-12 px-8 text-lg font-bold rounded-xl transition-all duration-300 ${selectedPhotoIndices.length === requiredShots
-                                    ? 'bg-black text-white hover:bg-gray-800 hover:scale-105 shadow-xl shadow-black/20'
-                                    : 'bg-gray-200 text-gray-400'
+                                ? 'bg-black text-white hover:bg-gray-800 hover:scale-105 shadow-xl shadow-black/20'
+                                : 'bg-gray-200 text-gray-400'
                                 }`}
                         >
                             Tiếp Tục
@@ -196,6 +215,33 @@ export const SelectionLayout = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Photo Cropper Modal */}
+            {editingIndex !== null && (() => {
+                const layoutConfig = getLayoutConfig(selectedFrameId);
+                const selectionOrder = selectedPhotoIndices.indexOf(editingIndex);
+                let targetAspect = 16 / 9;
+
+                if (selectionOrder !== -1 && layoutConfig.slots[selectionOrder]) {
+                    const slot = layoutConfig.slots[selectionOrder];
+                    const slotRealW = slot.w * 2480;
+                    const slotRealH = slot.h * 3508;
+                    targetAspect = slotRealW / slotRealH;
+                }
+
+                return (
+                    <PhotoCropper
+                        isOpen={true}
+                        imageSrc={photoPreviews[editingIndex]}
+                        onClose={() => setEditingIndex(null)}
+                        onCropComplete={(blob, url) => {
+                            updatePhoto(editingIndex, blob, url);
+                        }}
+                        aspectRatio={targetAspect}
+                        initialFlipHorizontal={true}
+                    />
+                );
+            })()}
         </div>
     );
 };
