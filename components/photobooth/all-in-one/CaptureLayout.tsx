@@ -246,7 +246,7 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
 
                     {/* CAPTURE STEP: Countdown Overlay */}
                     {step === 'CAPTURE' && countdown !== null && (
-                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/20 backdrop-blur-[2px]">
+                        <div className="absolute inset-0 flex items-center justify-center z-20">
                             <span className="text-white text-[15rem] font-black animate-pulse font-mono leading-none drop-shadow-2xl">
                                 {countdown}
                             </span>
