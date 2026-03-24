@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getLayoutConfig, DEFAULT_OVERLAY_CONFIG } from '@/app/config/layouts';
+import { getLayoutConfig, DEFAULT_OVERLAY_CONFIG, FRAME_ASSETS, FRAME_TEXT_COLORS } from '@/app/config/layouts';
 
 // Constants from Monitor logic
 const FILTER_MAP: Record<string, string> = {
@@ -8,39 +8,7 @@ const FILTER_MAP: Record<string, string> = {
     sepia: 'sepia(1)',
 };
 
-const FRAME_ASSETS: Record<string, string> = {
-    'frame-danang': '/frame-da-nang.png',
-    'frame-bao-xuan': '/frame-bao-xuan.png',
-    'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
-    'frame-final-1': '/frame-final.png', // Corrected path from Monitor might be /frame-final-1.png? Monitor says /frame-final-1.png
-    'frame-cuoi-1': '/frame-cuoi-1.png',
-    'frame-cuoi-2': '/frame-cuoi-2.png',
-    'frame-cuoi-3': '/frame-cuoi-3.png',
-    'frame-quan-su': '/frame-quan-su.png',
-    'frame-lich-xanh-duong': '/frame-lich-xanh-duong.png',
-    'frame-lich-hong': '/frame-lich-hong.png',
-    'frame-lich-xanh': '/frame-lich-xanh.png',
-    'frame-lich-xam': '/frame-lich-xam.png',
-    'frame-lich-den': '/frame-lich-den.png',
-    'frame-xtn': '/frame-xtn.png',
-};
-
-const FRAME_TEXT_COLORS: Record<string, string> = {
-    'frame-danang': '#a40000',
-    'frame-bao-xuan': '#4e6f39',
-    'frame-chuyen-tau': '#966725',
-    'frame-final-1': '#000000',
-    'frame-cuoi-1': '#a40000',
-    'frame-cuoi-2': '#e4f407ff',
-    'frame-cuoi-3': '#ffffffff',
-    'frame-quan-su': '#4e6f39',
-    'frame-lich-xanh-duong': '#0072f4ff',
-    'frame-lich-hong': '#000000ff',
-    'frame-lich-xanh': '#000000ff',
-    'frame-lich-xam': '#000000ff',
-    'frame-lich-den': '#ffffffff',
-    'frame-xtn': '#ffffffff'
-};
+// Removed duplicated FRAME_ASSETS and FRAME_TEXT_COLORS
 
 interface UseStripComposerProps {
     uniqueId: string;
