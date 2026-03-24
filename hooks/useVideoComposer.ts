@@ -176,7 +176,7 @@ export const useVideoComposer = ({
             recorder.start();
 
             // Duration Logic: Use max duration of clips or fallback to 5.
-            // Loop 2 times for effect, OR ensure we cover at least one full loop of longest clip.
+            // Loop 1 times for effect (turned off the 2nd loop)
             const durations = videos.map(video => {
                 const d = video.duration;
                 // Treat infinity or very short as 5s default
@@ -184,8 +184,8 @@ export const useVideoComposer = ({
             });
 
             const baseDuration = Math.max(...durations, 5) * 1000;
-            // Target duration: Loop twice if short, or just ensure it's interesting
-            const targetDuration = baseDuration * 2;
+            // Target duration: Loop once
+            const targetDuration = baseDuration;
 
             const startTime = performance.now();
 
@@ -246,10 +246,9 @@ export const useVideoComposer = ({
 
                         // --- USE OVERLAY_CONFIG FROM LAYOUT ---
                         const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = layoutConfig.overlay ?? DEFAULT_OVERLAY_CONFIG;
-                        // For video, we might want a default color if not passed, but layout config handles it?
-                        // Actually MonitorPage imports FRAME_TEXT_COLORS from somewhere not in config/layouts?
-                        // Let's assume a default or import it if needed. For now default #2c2c2c.
-                        const textColor = '#2c2c2c';
+
+                        // Ensure we use the exact frame text color defined in configs
+                        const textColor = FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c';
 
                         // 1. Timestamp
                         const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
@@ -295,7 +294,7 @@ export const useVideoComposer = ({
                         }
                         const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
-                        const message = customMessage || 'TrinhCaPhe';
+                        const message = 'TrinhCaPhe';
                         ctx.fillText(message, msgX, msgY);
                     }
 
@@ -346,6 +345,14 @@ export const useVideoComposer = ({
         }
 
     }, [enabled, status, rawVideoClips, selectedFrameId, selectedPhotoIndices, signatureData]); // Dependencies
+
+    const currentUniqueId = useRef(uniqueId);
+    useEffect(() => {
+        if (uniqueId !== currentUniqueId.current) {
+            currentUniqueId.current = uniqueId;
+            setStatus('idle');
+        }
+    }, [uniqueId]);
 
     useEffect(() => {
         if (enabled && status === 'idle' && rawVideoClips.length > 0) {

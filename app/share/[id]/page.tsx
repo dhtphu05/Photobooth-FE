@@ -248,6 +248,14 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
     return (
         <div className="min-h-screen bg-gray-100 py-8 px-4">
             <div className="max-w-7xl mx-auto space-y-8">
+                {/* Location Header */}
+                <div className="text-center space-y-2 pb-4">
+                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Kỷ Niệm Của Bạn</h1>
+                    <p className="text-sm font-medium text-gray-600 uppercase tracking-widest flex items-center justify-center gap-1">
+                        📍 Trình Cà Phê - Phố Đi Bộ Bạch Đằng
+                    </p>
+                </div>
+
                 {/* iOS Hint */}
                 {isIOS && (
                     <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg shadow-sm">

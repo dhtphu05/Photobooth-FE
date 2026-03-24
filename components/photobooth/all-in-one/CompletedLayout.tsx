@@ -7,9 +7,17 @@ import { useBooth } from '@/context/BoothContext';
 // Import the direct API function for Promise.all usage, OR use the hook's mutateAsync
 import { useUploadSessionMedia, completeSession } from '@/api/endpoints/sessions/sessions';
 import { useStripComposer } from '@/hooks/useStripComposer';
-import { useVideoComposer } from '@/hooks/useVideoComposer';
-
-export const CompletedLayout = () => {
+export const CompletedLayout = ({
+    videoBlob,
+    videoUrl,
+    videoStatus,
+    backgroundUploadsRef
+}: {
+    videoBlob: Blob | null;
+    videoUrl: string | null;
+    videoStatus: 'idle' | 'generating' | 'success' | 'error';
+    backgroundUploadsRef: React.MutableRefObject<Promise<any>[]>;
+}) => {
     const {
         rawPhotos, rawVideoClips, selectedPhotoIndices, selectedFrameId, selectedFilter, customMessage, signatureData,
         sessionId, resetSession, isProcessing, setProcessing
@@ -32,44 +40,9 @@ export const CompletedLayout = () => {
         enabled: true // Always generate on mount
     });
 
-    // 2. Generate Video Recap
-    const { videoBlob, videoUrl, status: videoStatus } = useVideoComposer({
-        uniqueId: 'completed-video',
-        rawVideoClips,
-        selectedPhotoIndices,
-        selectedFrameId,
-        signatureData,
-        enabled: true
-    });
+    // 2. Generate Video Recap (now done in background by parent `AllInOneContent`)
 
     console.log('[CompletedLayout] Statuses:', { isStripGenerating, videoStatus, uploadState });
-
-    // Helper to mirror a blob (image)
-    const mirrorImageBlob = async (originalBlob: Blob): Promise<Blob> => {
-        if (typeof window === 'undefined') return originalBlob;
-        try {
-            const bitmap = await createImageBitmap(originalBlob);
-            const canvas = document.createElement('canvas');
-            canvas.width = bitmap.width;
-            canvas.height = bitmap.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return originalBlob;
-
-            // Flip horizontally
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(bitmap, 0, 0);
-
-            return new Promise((resolve) => {
-                canvas.toBlob((b) => {
-                    resolve(b || originalBlob);
-                }, originalBlob.type || 'image/jpeg', 0.95);
-            });
-        } catch (e) {
-            console.error("Failed to mirror image", e);
-            return originalBlob;
-        }
-    };
 
     // Master Upload Logic
     useEffect(() => {
@@ -99,90 +72,23 @@ export const CompletedLayout = () => {
             }
 
             setUploadState('uploading');
-            const totalUploads =
-                (stripBlob ? 1 : 0) +
-                (videoBlob ? 1 : 0) +
-                selectedPhotoIndices.length +
-                (signatureData ? 1 : 0);
-
-            let completedCount = 0;
-            const updateProgress = () => {
-                completedCount++;
-                // Cap progress at 95% until final completion
-                setProgress(Math.min(95, Math.round((completedCount / totalUploads) * 100)));
-            };
-
-            const uploadPromises: Promise<any>[] = [];
 
             try {
                 // A. Upload Processed Strip
-                if (stripBlob) {
+                const stripPromise = stripBlob ? (async () => {
                     const file = new File([stripBlob], 'photostrip.jpg', { type: 'image/jpeg' });
-                    uploadPromises.push(
-                        uploadMedia({
-                            id: sessionId,
-                            data: { file },
-                            params: { type: 'PROCESSED' }
-                        }).then(updateProgress)
-                    );
-                }
+                    await uploadMedia({
+                        id: sessionId,
+                        data: { file },
+                        params: { type: 'PROCESSED' }
+                    });
+                    setProgress(50);
+                })() : Promise.resolve();
 
-                // B. Upload Video Recap
-                if (videoBlob) {
-                    const file = new File([videoBlob], 'videorecap.webm', { type: 'video/webm' });
-                    uploadPromises.push(
-                        uploadMedia({
-                            id: sessionId,
-                            data: { file },
-                            params: { type: 'VIDEO' }
-                        }).then(updateProgress)
-                    );
-                }
+                // Wait for strip and all background uploads
+                await Promise.all([stripPromise, ...backgroundUploadsRef.current]);
 
-                // C. Upload Selected Originals (IMPORTANT for Share Page)
-                // Use Promise.all to map/mirror concurrently
-                const originalUploadPromises = selectedPhotoIndices.map(async (index) => {
-                    const blob = rawPhotos[index];
-                    if (blob) {
-                        // Mirror the blob before uploading
-                        const mirroredBlob = await mirrorImageBlob(blob);
-
-                        // Keep original filename if possible, or generic
-                        const file = new File([mirroredBlob], `original-${index}.jpg`, { type: 'image/jpeg' });
-                        return uploadMedia({
-                            id: sessionId,
-                            data: { file },
-                            params: { type: 'ORIGINAL' }
-                        }).then(updateProgress);
-                    }
-                });
-
-                // Add these promises to the main list
-                uploadPromises.push(...originalUploadPromises);
-
-                // D. Upload Signature (Optional but good for completeness)
-                if (signatureData) {
-                    // Convert base64 to blob
-                    const fetchSig = async () => {
-                        try {
-                            const res = await fetch(signatureData);
-                            const blob = await res.blob();
-                            const file = new File([blob], 'signature.png', { type: 'image/png' });
-                            await uploadMedia({
-                                id: sessionId,
-                                data: { file },
-                                params: { type: 'SIGNATURE' as any } // Type might need casting if strict enum
-                            });
-                        } catch (e) {
-                            console.warn("Signature upload failed", e);
-                        } finally {
-                            updateProgress();
-                        }
-                    };
-                    uploadPromises.push(fetchSig());
-                }
-
-                await Promise.all(uploadPromises);
+                setProgress(90);
 
                 // E. Mark Session as Completed (Important for backend)
                 try {

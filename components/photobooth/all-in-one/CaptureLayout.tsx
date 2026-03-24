@@ -12,7 +12,7 @@ const VIDEO_CONSTRAINTS = {
 const TIMER_OPTIONS = [5, 7, 10];
 
 interface CaptureLayoutProps {
-    webcamRef: React.RefObject<Webcam>;
+    webcamRef: React.RefObject<Webcam | null>;
 }
 
 export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
@@ -215,8 +215,13 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
                     <p className="text-xs text-black/60 uppercase tracking-widest">Session</p>
                     <p className="font-mono text-lg font-bold">{sessionId || '—'}</p>
                 </div>
-                <div className="px-6 py-2 rounded-full bg-black/5 border border-black/10 text-lg font-medium text-black">
-                    {step === 'CONFIG' ? 'Chọn thời gian chụp' : 'Đang chụp ảnh...'}
+                <div className="flex flex-col items-center gap-2">
+                    <div className="text-sm font-bold text-gray-800 uppercase tracking-wide">
+                        📍 Trình Cà Phê - Phố Đi Bộ Bạch Đằng
+                    </div>
+                    <div className="px-6 py-2 rounded-full bg-black/5 border border-black/10 text-lg font-medium text-black">
+                        {step === 'CONFIG' ? 'Chọn thời gian chụp' : 'Đang chụp ảnh...'}
+                    </div>
                 </div>
                 <div className="text-right">
                     <p className="text-xs text-black/60 uppercase tracking-widest">Shots</p>

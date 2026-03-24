@@ -274,7 +274,7 @@ export const FRAME_TEXT_COLORS: Record<string, string> = {
     'frame-cuoi-1': '#a40000',
     'frame-cuoi-2': '#e4f407ff',
     'frame-cuoi-3': '#ffffffff',
-    'frame-quan-su': '#4e6f39',
+    'frame-quan-su': '#ff0000',
     'frame-lich-xanh-duong': '#0072f4ff',
     'frame-lich-hong': '#000000ff',
     'frame-lich-xanh': '#000000ff',
