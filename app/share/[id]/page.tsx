@@ -78,6 +78,29 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                 // ignore parse failures and fall back to provided name
             }
 
+            const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const isImage = /\.(jpe?g|png)$/i.test(filename);
+            
+            // On iOS for images, trigger the native Share Sheet with the "Save Image" option
+            if (isIOS && isImage && navigator.canShare) {
+                const file = new File([blob], filename, { type: blob.type });
+                if (navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'My Photobooth Photo'
+                        });
+                        return; // Successfully shared/saved, abort legacy download
+                    } catch (err: any) {
+                        // If user cancelled, just return instead of fallback
+                        if (err.name === 'AbortError') return;
+                        console.error('Share failed', err);
+                        // Fallthrough to legacy method if share API threw an unknown error
+                    }
+                }
+            }
+
+            // Legacy download for PC, Android, or Videos
             anchor.href = blobUrl;
             anchor.download = filename;
             anchor.rel = 'noopener noreferrer';
@@ -147,10 +170,31 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                 throw new Error('Unable to export strip image');
             }
 
+            const filename = `photoxinhh-strip-${id}.jpg`;
+            const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+            // On iOS for images, trigger the native Share Sheet with the "Save Image" option
+            if (isIOS && navigator.canShare) {
+                const file = new File([blob], filename, { type: 'image/jpeg' });
+                if (navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'My Photobooth Strip'
+                        });
+                        return; // Successfully shared/saved, abort legacy download
+                    } catch (err: any) {
+                        if (err.name === 'AbortError') return;
+                        console.error('Share failed', err);
+                    }
+                }
+            }
+
+            // Legacy download
             const blobUrl = URL.createObjectURL(blob);
             const anchor = document.createElement('a');
             anchor.href = blobUrl;
-            anchor.download = `photoxinhh-strip-${id}.jpg`;
+            anchor.download = filename;
             document.body.appendChild(anchor);
             anchor.click();
             setTimeout(() => {
