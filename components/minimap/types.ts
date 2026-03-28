@@ -72,3 +72,64 @@ export type PlaceSheetProps = {
   onClearSelection: () => void
   onResetFilters: () => void
 }
+
+export type TripScreenMode = "map" | "itinerary"
+
+export type TripHeader = {
+  title: string
+  destination: string
+  timelineLabel: string
+  statusLabel: string
+  coverImageUrl: string
+  eyebrow: string
+}
+
+export type TripDayChip = {
+  id: string
+  label: string
+  dateLabel: string
+}
+
+export type TripPlaceCard = {
+  id: string
+  orderLabel: string
+  subtitle: string
+  placeName: string
+  imageUrl: string
+  tags: string[]
+  placeId?: string
+  ctaLabel: string
+}
+
+export type TripContextSuggestion = {
+  id: string
+  title: string
+  description: string
+  ctaLabel: string
+}
+
+export type TripTimelineItem = {
+  id: string
+  timeLabel: string
+  title: string
+  description: string
+  note?: string
+  placeCard?: TripPlaceCard
+  suggestion?: TripContextSuggestion
+  actionLabel?: string
+}
+
+export type TripTimelineSection = {
+  id: string
+  chip: TripDayChip
+  title: string
+  summary: string
+  items: TripTimelineItem[]
+}
+
+export type TripMapRoute = {
+  id: string
+  title: string
+  subtitle: string
+  placeIds: string[]
+}

@@ -26,7 +26,15 @@ import {
 import { PlaceMarker } from "@/components/minimap/place-marker"
 import { PlaceSheet } from "@/components/minimap/place-sheet"
 import { getMapUiState } from "@/components/minimap/sheet-config"
-import type { ClusterTheme, Coordinates, EnrichedMapPlace, PlaceInteractionState, SheetState } from "@/components/minimap/types"
+import { TripItineraryScreen } from "@/components/minimap/trip-itinerary-screen"
+import type {
+  ClusterTheme,
+  Coordinates,
+  EnrichedMapPlace,
+  PlaceInteractionState,
+  SheetState,
+  TripScreenMode,
+} from "@/components/minimap/types"
 import { useLockBodyScroll } from "@/components/minimap/use-lock-body-scroll"
 import { useMapSheetPadding } from "@/components/minimap/use-map-sync"
 import { enrichPlace } from "@/components/minimap/utils"
@@ -92,6 +100,7 @@ export default function MiniMapScreen() {
   const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle")
   const [searchQuery, setSearchQuery] = useState("")
   const [activeFilter, setActiveFilter] = useState<"all" | ClusterTheme | "collected">("all")
+  const [screenMode, setScreenMode] = useState<TripScreenMode>("map")
 
   const deferredSearchQuery = useDeferredValue(searchQuery.trim().toLowerCase())
   const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
@@ -200,7 +209,7 @@ export default function MiniMapScreen() {
   }
 
   const handleSelectPlace = (placeId: string, nextState: SheetState = "half") => {
-    const nextPlace = filteredPlaces.find((place) => place.id === placeId)
+    const nextPlace = enrichedPlaces.find((place) => place.id === placeId)
 
     startTransition(() => {
       setSelectedPlaceId(placeId)
@@ -341,16 +350,28 @@ export default function MiniMapScreen() {
                 </div>
               </div>
 
-              <Button
-                asChild
-                size="icon"
-                className="h-12 w-12 shrink-0 rounded-full border border-white/50 bg-[rgba(252,251,247,0.9)] text-[#12212b] shadow-[0_18px_36px_rgba(16,32,39,0.12)] hover:bg-white"
-              >
-                <Link href="/my-profile">
-                  <MapPinned className="h-5 w-5" />
-                  <span className="sr-only">Mở My Profile</span>
-                </Link>
-              </Button>
+              <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                <Button
+                  type="button"
+                  onClick={() => setScreenMode("itinerary")}
+                  className="h-12 rounded-full border border-white/50 bg-[rgba(12,53,80,0.92)] px-4 text-white shadow-[0_18px_36px_rgba(16,32,39,0.16)] hover:bg-[#0a2d44]"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span className="hidden sm:inline">Lịch trình Đà Nẵng</span>
+                  <span className="sm:hidden">Lịch trình</span>
+                </Button>
+
+                <Button
+                  asChild
+                  size="icon"
+                  className="h-12 w-12 rounded-full border border-white/50 bg-[rgba(252,251,247,0.9)] text-[#12212b] shadow-[0_18px_36px_rgba(16,32,39,0.12)] hover:bg-white"
+                >
+                  <Link href="/my-profile">
+                    <MapPinned className="h-5 w-5" />
+                    <span className="sr-only">Mở My Profile</span>
+                  </Link>
+                </Button>
+              </div>
             </div>
 
             <div className="rounded-[1.35rem] border border-white/50 bg-[rgba(252,251,247,0.84)] p-2 shadow-[0_16px_30px_rgba(16,32,39,0.1)] backdrop-blur-xl">
@@ -486,6 +507,20 @@ export default function MiniMapScreen() {
           onClearSelection={handleClearSelection}
           onResetFilters={resetFilters}
         />
+
+        {screenMode === "itinerary" ? (
+          <TripItineraryScreen
+            mapboxAccessToken={mapboxAccessToken}
+            mapStyle={mapStyle}
+            onBack={() => setScreenMode("map")}
+            onOpenPlace={(placeId, nextState = "half") => {
+              setScreenMode("map")
+              setSearchQuery("")
+              setActiveFilter("all")
+              handleSelectPlace(placeId, nextState)
+            }}
+          />
+        ) : null}
       </div>
     </main>
   )
