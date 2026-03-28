@@ -1,12 +1,17 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Be_Vietnam_Pro } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import "mapbox-gl/dist/mapbox-gl.css"
 import "./globals.css"
 import Providers from "./providers"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-be-vietnam-pro",
+})
 
 export const metadata: Metadata = {
   title: "Photobooth-XuanTinhNguyen26-fromlcdkhoacnttwithluv",
@@ -38,7 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
+      <body className={`${beVietnamPro.variable} font-sans antialiased`}>
         <Providers>
           {children}
           <Analytics />

@@ -58,8 +58,8 @@
 }
 
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-sans: var(--font-be-vietnam-pro), "Be Vietnam Pro", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -107,6 +107,11 @@
   }
 }
 
+@theme inline {
+  --animate-marker-pulse: marker-pulse 2.4s ease-out infinite;
+  --animate-marker-bounce: marker-bounce 2.8s ease-in-out infinite;
+}
+
 /* Removed glassmorphism and gradient effects */
 .flash-overlay {
   animation: flash 0.3s ease-out;
@@ -121,5 +126,29 @@
   }
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes marker-pulse {
+  0% {
+    transform: scale(0.82);
+    opacity: 0.2;
+  }
+  55% {
+    opacity: 0.38;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+@keyframes marker-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
   }
 }

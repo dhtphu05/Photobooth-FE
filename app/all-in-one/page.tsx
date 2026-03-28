@@ -1,5 +1,4 @@
 'use client';
-
 import { useRef, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { BoothProvider, useBooth } from '@/context/BoothContext';
