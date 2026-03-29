@@ -264,6 +264,10 @@ export const FRAME_ASSETS: Record<string, string> = {
     'frame-lich-xam': '/frame-lich-xam.png',
     'frame-lich-den': '/frame-lich-den.png',
     'frame-xtn': '/frame-xtn.png',
+    'frame-my-khe': '/frame-my-khe.png',
+    'frame-linh-ung': '/frame-linh-ung.png',
+    'frame-cho-han': '/frame-cho-han.png',
+
 };
 
 export const FRAME_TEXT_COLORS: Record<string, string> = {
@@ -281,6 +285,9 @@ export const FRAME_TEXT_COLORS: Record<string, string> = {
     'frame-lich-xam': '#000000ff',
     'frame-lich-den': '#ffffffff',
     'frame-xtn': '#ffffffff',
+    'frame-my-khe': '#000000ff',
+    'frame-linh-ung': '#000000ff',
+    'frame-cho-han': '#000000ff',
     // Default fallback
     'default': '#2c2c2c',
 };

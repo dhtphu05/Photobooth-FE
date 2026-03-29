@@ -116,7 +116,7 @@ export const useVideoComposer = ({
             }
 
             // Canvas Setup
-            const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den', 'frame-xtn'].includes(selectedFrameId);
+            const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den', 'frame-xtn', 'frame-my-khe', 'frame-linh-ung', 'frame-cho-han'].includes(selectedFrameId);
             const canvas = document.createElement('canvas');
             if (isCustomFrame) {
                 canvas.width = 1080;
