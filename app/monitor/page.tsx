@@ -16,7 +16,7 @@ const FRAME_ASSETS: Record<string, string | null> = {
   'frame-2': null,
   'frame-3': null,
 
-
+  'frame-fpt': '/fpt.png',
   'frame-danang': '/frame-da-nang.png',
   'frame-bao-xuan': '/frame-bao-xuan.png',
   'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
@@ -50,6 +50,7 @@ const CANVAS_FILTER_MAP: Record<string, string> = {
 
 // --- CONFIGURATION FOR OVERLAY TEXT ---
 const FRAME_TEXT_COLORS: Record<string, string> = {
+  'frame-fpt': '#000000',
   'frame-danang': '#a40000',
   'frame-bao-xuan': '#4e6f39',
   'frame-chuyen-tau': '#966725',

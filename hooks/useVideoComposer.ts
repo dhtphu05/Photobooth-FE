@@ -233,70 +233,70 @@ export const useVideoComposer = ({
                         ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
                     }
 
-                    // --- DRAW TEXT OVERLAY (Timestamp & Message) ---
-                    if (isCustomFrame) {
-                        const now = new Date();
-                        // Format: 17h37, 31/12/2025
-                        const hours = now.getHours().toString().padStart(2, '0');
-                        const minutes = now.getMinutes().toString().padStart(2, '0');
-                        const day = now.getDate().toString().padStart(2, '0');
-                        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-                        const year = now.getFullYear();
-                        const timestampText = `${hours}h${minutes}, ${day}/${month}/${year}`;
+                    // --- DRAW TEXT OVERLAY (Timestamp & Message) - temporarily disabled ---
+                    // if (isCustomFrame) {
+                    //     const now = new Date();
+                    //     // Format: 17h37, 31/12/2025
+                    //     const hours = now.getHours().toString().padStart(2, '0');
+                    //     const minutes = now.getMinutes().toString().padStart(2, '0');
+                    //     const day = now.getDate().toString().padStart(2, '0');
+                    //     const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                    //     const year = now.getFullYear();
+                    //     const timestampText = `${hours}h${minutes}, ${day}/${month}/${year}`;
 
-                        // --- USE OVERLAY_CONFIG FROM LAYOUT ---
-                        const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = layoutConfig.overlay ?? DEFAULT_OVERLAY_CONFIG;
+                    //     // --- USE OVERLAY_CONFIG FROM LAYOUT ---
+                    //     const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = layoutConfig.overlay ?? DEFAULT_OVERLAY_CONFIG;
 
-                        // Ensure we use the exact frame text color defined in configs
-                        const textColor = FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c';
+                    //     // Ensure we use the exact frame text color defined in configs
+                    //     const textColor = FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c';
 
-                        // 1. Timestamp
-                        const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
-                        const tsFontStyle = TIMESTAMP.FONT_STYLE || 'normal';
-                        ctx.font = `${tsFontStyle} ${tsFontSize}px ${TIMESTAMP.FONT_FAMILY}`;
-                        ctx.fillStyle = textColor;
-                        ctx.textBaseline = 'top';
-                        ctx.textAlign = TIMESTAMP.ALIGN;
+                    //     // 1. Timestamp
+                    //     const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
+                    //     const tsFontStyle = TIMESTAMP.FONT_STYLE || 'normal';
+                    //     ctx.font = `${tsFontStyle} ${tsFontSize}px ${TIMESTAMP.FONT_FAMILY}`;
+                    //     ctx.fillStyle = textColor;
+                    //     ctx.textBaseline = 'top';
+                    //     ctx.textAlign = TIMESTAMP.ALIGN;
 
-                        // Calculate X based on alignment
-                        let tsX = 0;
-                        if (TIMESTAMP.ALIGN === 'right') {
-                            tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT) * canvas.width;
-                        } else if (TIMESTAMP.ALIGN === 'center') {
-                            tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT / 2) * canvas.width;
-                        } else {
-                            tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
-                        }
+                    //     // Calculate X based on alignment
+                    //     let tsX = 0;
+                    //     if (TIMESTAMP.ALIGN === 'right') {
+                    //         tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT) * canvas.width;
+                    //     } else if (TIMESTAMP.ALIGN === 'center') {
+                    //         tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT / 2) * canvas.width;
+                    //     } else {
+                    //         tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
+                    //     }
 
-                        // FIX: Manually shift Timestamp right for 'frame-lich-xanh-duong' only in Export to match printed expectation
-                        // (Copied from MonitorPage)
-                        if (selectedFrameId === 'frame-lich-xanh-duong' || selectedFrameId === 'frame-lich-hong' || selectedFrameId === 'frame-lich-xanh' || selectedFrameId === 'frame-lich-xam' || selectedFrameId === 'frame-lich-den') {
-                            tsX += canvas.width * 0.03;
-                        }
+                    //     // FIX: Manually shift Timestamp right for 'frame-lich-xanh-duong' only in Export to match printed expectation
+                    //     // (Copied from MonitorPage)
+                    //     if (selectedFrameId === 'frame-lich-xanh-duong' || selectedFrameId === 'frame-lich-hong' || selectedFrameId === 'frame-lich-xanh' || selectedFrameId === 'frame-lich-xam' || selectedFrameId === 'frame-lich-den') {
+                    //         tsX += canvas.width * 0.03;
+                    //     }
 
-                        const tsY = (TIMESTAMP.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
+                    //     const tsY = (TIMESTAMP.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
-                        ctx.fillText(timestampText, tsX, tsY);
+                    //     ctx.fillText(timestampText, tsX, tsY);
 
-                        // 2. Message
-                        const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
-                        const msgFontStyle = MESSAGE.FONT_STYLE || 'normal';
-                        ctx.font = `${msgFontStyle} ${msgFontSize}px ${MESSAGE.FONT_FAMILY}`;
-                        ctx.textAlign = MESSAGE.ALIGN;
+                    //     // 2. Message
+                    //     const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
+                    //     const msgFontStyle = MESSAGE.FONT_STYLE || 'normal';
+                    //     ctx.font = `${msgFontStyle} ${msgFontSize}px ${MESSAGE.FONT_FAMILY}`;
+                    //     ctx.textAlign = MESSAGE.ALIGN;
 
-                        let msgX = 0;
-                        if (MESSAGE.ALIGN === 'right') {
-                            msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT) * canvas.width;
-                        } else if (MESSAGE.ALIGN === 'center') {
-                            msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT / 2) * canvas.width;
-                        } else {
-                            msgX = MESSAGE.LEFT_PERCENT * canvas.width;
-                        }
-                        const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
+                    //     let msgX = 0;
+                    //     if (MESSAGE.ALIGN === 'right') {
+                    //         msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT) * canvas.width;
+                    //     } else if (MESSAGE.ALIGN === 'center') {
+                    //         msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT / 2) * canvas.width;
+                    //     } else {
+                    //         msgX = MESSAGE.LEFT_PERCENT * canvas.width;
+                    //     }
+                    //     const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
-                        const message = 'TrinhCaPhe';
-                        ctx.fillText(message, msgX, msgY);
-                    }
+                    //     const message = 'TrinhCaPhe';
+                    //     ctx.fillText(message, msgX, msgY);
+                    // }
 
                     // Signature
                     if (signatureImage) {

@@ -14,6 +14,7 @@ import { getLayoutConfig, DEFAULT_OVERLAY_CONFIG } from '@/app/config/layouts';
 
 const TIMER_OPTIONS = [5, 7, 10];
 const FRAME_OPTIONS = [
+  { id: 'frame-fpt', label: 'FPT', image: '/fpt.png' },
   { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang.png' },
   { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/frame-bao-xuan.png' },
   { id: 'frame-chuyen-tau', label: 'Chuyến tàu', image: '/frame-chuyen-tau-thanh-xuan.png' },

@@ -250,6 +250,7 @@ export const getLayoutConfig = (frameId: string): LayoutConfig => {
 };
 
 export const FRAME_ASSETS: Record<string, string> = {
+    'frame-fpt': '/fpt.png',
     'frame-danang': '/frame-da-nang.png',
     'frame-bao-xuan': '/frame-bao-xuan.png',
     'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
@@ -272,6 +273,7 @@ export const FRAME_ASSETS: Record<string, string> = {
 
 export const FRAME_TEXT_COLORS: Record<string, string> = {
     'frame-danang': '#a40000',
+    'frame-fpt': '#000000',
     'frame-bao-xuan': '#4e6f39',
     'frame-chuyen-tau': '#966725',
     'frame-final-1': '#000000',
