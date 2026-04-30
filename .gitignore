@@ -22,6 +22,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local codex/dev symlinks
+agents
+rules
+skills
+codex.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
