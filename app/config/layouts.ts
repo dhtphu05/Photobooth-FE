@@ -33,6 +33,7 @@ export interface LayoutConfig {
     captureCount: number; // Total shots to capture depending on frame
     slots: Slot[];
     overlay?: OverlayConfig; // Optional overlay config, fallback to default if missing
+    showTextOverlay?: boolean;
 }
 
 export const DEFAULT_OVERLAY_CONFIG: OverlayConfig = {
@@ -222,6 +223,18 @@ export const LAYOUTS: Record<string, LayoutConfig> = {
             }
         }
     },
+    'frame-3004': {
+        frameId: 'frame-3004',
+        photoCount: 3,
+        captureCount: 6,
+        slots: [
+            { x: 0.4943, y: 0.1640, w: 0.4604, h: 0.1740 },
+            { x: 0.0212, y: 0.5505, w: 0.4611, h: 0.1745 },
+            { x: 0.0212, y: 0.7675, w: 0.4611, h: 0.1750 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
     // Default fallback for other frames that need 3 photos
     'default_3_photo': {
         frameId: 'default_3_photo',
@@ -268,6 +281,7 @@ export const FRAME_ASSETS: Record<string, string> = {
     'frame-my-khe': '/frame-my-khe.png',
     'frame-linh-ung': '/frame-linh-ung.png',
     'frame-cho-han': '/frame-cho-han.png',
+    'frame-3004': '/frame-3004.png',
 
 };
 
@@ -290,6 +304,7 @@ export const FRAME_TEXT_COLORS: Record<string, string> = {
     'frame-my-khe': '#000000ff',
     'frame-linh-ung': '#000000ff',
     'frame-cho-han': '#000000ff',
+    'frame-3004': '#000000ff',
     // Default fallback
     'default': '#2c2c2c',
 };

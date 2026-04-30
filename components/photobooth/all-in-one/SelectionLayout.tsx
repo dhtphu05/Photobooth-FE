@@ -24,6 +24,7 @@ const FRAME_ASSETS: Record<string, string> = {
     'frame-my-khe': '/frame-my-khe.png',
     'frame-linh-ung': '/frame-linh-ung.png',
     'frame-cho-han': '/frame-cho-han.png',
+    'frame-3004': '/frame-3004.png',
 };
 
 export const SelectionLayout = () => {

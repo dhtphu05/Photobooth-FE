@@ -4,6 +4,7 @@ import { useBooth } from '@/context/BoothContext';
 import { Button } from '@/components/ui/button';
 import { useUploadSessionMedia } from '@/api/endpoints/sessions/sessions';
 import { useStripComposer } from '@/hooks/useStripComposer';
+import { getLayoutConfig } from '@/app/config/layouts';
 
 export const ReviewLayout = () => {
     const {
@@ -23,6 +24,8 @@ export const ReviewLayout = () => {
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const maxWords = 10;
+    const layoutConfig = getLayoutConfig(selectedFrameId);
+    const shouldShowMessageInput = layoutConfig.showTextOverlay !== false;
 
     // Sync external customMessage to local input (initial load or external change)
     useEffect(() => {
@@ -94,29 +97,37 @@ export const ReviewLayout = () => {
             <div className="w-full max-w-md bg-white border-l border-gray-200 flex flex-col p-8 z-10 shadow-xl">
                 <div className="mb-8 text-center pt-8">
                     <h2 className="text-3xl font-bold mb-2">Chỉnh sửa cuối</h2>
-                    <p className="text-gray-500">Thêm lời nhắn cho bức ảnh của bạn</p>
+                    <p className="text-gray-500">
+                        {shouldShowMessageInput ? 'Thêm lời nhắn cho bức ảnh của bạn' : 'Kiểm tra lại bố cục trước khi in ảnh'}
+                    </p>
                 </div>
 
                 {/* Message Input */}
-                <div className="mb-10">
-                    <label className="block text-lg font-bold text-gray-900 icon-label mb-3">
-                        <span className="mr-2">📝</span>
-                        Lời nhắn
-                    </label>
-                    <div className="relative">
-                        <input
-                            type="text"
-                            value={inputValue}
-                            onChange={e => handleInputChange(e.target.value)}
-                            placeholder="Nhập tên, ngày tháng..."
-                            className={`w-full p-6 rounded-2xl border-2 bg-gray-50 text-xl transition-colors outline-none ${isError ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-black'
-                                }`}
-                        />
-                        <div className={`text-sm mt-3 text-right font-medium ${isError ? 'text-red-500' : 'text-gray-400'}`}>
-                            {inputValue.trim().split(/\s+/).filter(w => w.length > 0).length}/{maxWords} từ
+                {shouldShowMessageInput ? (
+                    <div className="mb-10">
+                        <label className="block text-lg font-bold text-gray-900 icon-label mb-3">
+                            <span className="mr-2">📝</span>
+                            Lời nhắn
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={e => handleInputChange(e.target.value)}
+                                placeholder="Nhập tên, ngày tháng..."
+                                className={`w-full p-6 rounded-2xl border-2 bg-gray-50 text-xl transition-colors outline-none ${isError ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-black'
+                                    }`}
+                            />
+                            <div className={`text-sm mt-3 text-right font-medium ${isError ? 'text-red-500' : 'text-gray-400'}`}>
+                                {inputValue.trim().split(/\s+/).filter(w => w.length > 0).length}/{maxWords} từ
+                            </div>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="mb-10 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900">
+                        Frame này không hiển thị thời gian hoặc lời nhắn, nên bản in sẽ giữ nguyên bố cục của mẫu báo.
+                    </div>
+                )}
 
                 {/* Finish Action */}
                 <div className="mt-auto pb-8">

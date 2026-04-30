@@ -59,7 +59,7 @@ const AllInOneContent = () => {
 
     // Background job: Generate video recap early when entering the message step
     const { videoBlob, videoUrl, status: videoStatus } = useVideoComposer({
-        uniqueId: `global-video-${selectedFrameId}`,
+        uniqueId: `global-video-${selectedFrameId}-${customMessage}`,
         rawVideoClips,
         selectedPhotoIndices,
         selectedFrameId,

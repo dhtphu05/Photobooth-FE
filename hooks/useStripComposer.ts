@@ -47,7 +47,7 @@ export const useStripComposer = ({
 
             // 2. Setup Canvas
             const canvas = document.createElement('canvas');
-            const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den', 'frame-xtn', 'frame-my-khe', 'frame-linh-ung', 'frame-cho-han'].includes(selectedFrameId);
+            const isCustomFrame = ['frame-danang', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den', 'frame-xtn', 'frame-my-khe', 'frame-linh-ung', 'frame-cho-han', 'frame-3004'].includes(selectedFrameId);
 
             if (isCustomFrame) {
                 canvas.width = 2480;
@@ -117,63 +117,63 @@ export const useStripComposer = ({
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             }
 
-            // 6. Draw Text (Timestamp & Message) - temporarily disabled
-            // if (isCustomFrame) {
-            //     const now = new Date();
-            //     const hours = now.getHours().toString().padStart(2, '0');
-            //     const minutes = now.getMinutes().toString().padStart(2, '0');
-            //     const day = now.getDate().toString().padStart(2, '0');
-            //     const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            //     const year = now.getFullYear();
-            //     const timestampText = `${hours}h${minutes}, ${day}/${month}/${year}`;
+            // 6. Draw Text (Timestamp & Message) - LOGIC FROM MONITOR
+            if (isCustomFrame && layoutConfig.showTextOverlay !== false) {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const day = now.getDate().toString().padStart(2, '0');
+                const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                const year = now.getFullYear();
+                const timestampText = `${hours}h${minutes}, ${day}/${month}/${year}`;
 
-            //     const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = layoutConfig.overlay ?? DEFAULT_OVERLAY_CONFIG;
-            //     const textColor = FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c';
+                const { TIMESTAMP, MESSAGE, EXPORT_CONFIG } = layoutConfig.overlay ?? DEFAULT_OVERLAY_CONFIG;
+                const textColor = FRAME_TEXT_COLORS[selectedFrameId] || '#2c2c2c';
 
-            //     // 6.1 Timestamp logic from Monitor
-            //     const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
-            //     const tsFontStyle = TIMESTAMP.FONT_STYLE || 'normal';
-            //     ctx.font = `${tsFontStyle} ${tsFontSize}px ${TIMESTAMP.FONT_FAMILY}`;
-            //     ctx.fillStyle = textColor;
-            //     ctx.textBaseline = 'top';
-            //     ctx.textAlign = TIMESTAMP.ALIGN;
+                // 6.1 Timestamp logic from Monitor
+                const tsFontSize = Math.round(canvas.height * TIMESTAMP.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
+                const tsFontStyle = TIMESTAMP.FONT_STYLE || 'normal';
+                ctx.font = `${tsFontStyle} ${tsFontSize}px ${TIMESTAMP.FONT_FAMILY}`;
+                ctx.fillStyle = textColor;
+                ctx.textBaseline = 'top';
+                ctx.textAlign = TIMESTAMP.ALIGN;
 
-            //     let tsX = 0;
-            //     if (TIMESTAMP.ALIGN === 'right') {
-            //         tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT) * canvas.width;
-            //     } else if (TIMESTAMP.ALIGN === 'center') {
-            //         tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT / 2) * canvas.width;
-            //     } else {
-            //         tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
-            //     }
+                let tsX = 0;
+                if (TIMESTAMP.ALIGN === 'right') {
+                    tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT) * canvas.width;
+                } else if (TIMESTAMP.ALIGN === 'center') {
+                    tsX = (TIMESTAMP.LEFT_PERCENT + TIMESTAMP.WIDTH_PERCENT / 2) * canvas.width;
+                } else {
+                    tsX = TIMESTAMP.LEFT_PERCENT * canvas.width;
+                }
 
-            //     // Monitor override for specific frames in Export mode
-            //     if (['frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den'].includes(selectedFrameId)) {
-            //         tsX += canvas.width * 0.03;
-            //     }
+                // Monitor override for specific frames in Export mode
+                if (['frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den'].includes(selectedFrameId)) {
+                    tsX += canvas.width * 0.03;
+                }
 
-            //     const tsY = (TIMESTAMP.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
-            //     ctx.fillText(timestampText, tsX, tsY);
+                const tsY = (TIMESTAMP.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
+                ctx.fillText(timestampText, tsX, tsY);
 
-            //     // 6.2 Message logic from Monitor
-            //     const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
-            //     const msgFontStyle = MESSAGE.FONT_STYLE || 'normal';
-            //     ctx.font = `${msgFontStyle} ${msgFontSize}px ${MESSAGE.FONT_FAMILY}`;
-            //     ctx.textAlign = MESSAGE.ALIGN;
+                // 6.2 Message logic from Monitor
+                const msgFontSize = Math.round(canvas.height * MESSAGE.FONT_SIZE_PERCENT * EXPORT_CONFIG.FONT_SCALE);
+                const msgFontStyle = MESSAGE.FONT_STYLE || 'normal';
+                ctx.font = `${msgFontStyle} ${msgFontSize}px ${MESSAGE.FONT_FAMILY}`;
+                ctx.textAlign = MESSAGE.ALIGN;
 
-            //     let msgX = 0;
-            //     if (MESSAGE.ALIGN === 'right') {
-            //         msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT) * canvas.width;
-            //     } else if (MESSAGE.ALIGN === 'center') {
-            //         msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT / 2) * canvas.width;
-            //     } else {
-            //         msgX = MESSAGE.LEFT_PERCENT * canvas.width;
-            //     }
-            //     const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
+                let msgX = 0;
+                if (MESSAGE.ALIGN === 'right') {
+                    msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT) * canvas.width;
+                } else if (MESSAGE.ALIGN === 'center') {
+                    msgX = (MESSAGE.LEFT_PERCENT + MESSAGE.WIDTH_PERCENT / 2) * canvas.width;
+                } else {
+                    msgX = MESSAGE.LEFT_PERCENT * canvas.width;
+                }
+                const msgY = (MESSAGE.TOP_PERCENT + EXPORT_CONFIG.TOP_OFFSET_PERCENT) * canvas.height;
 
-            //     const message = customMessage || 'TrinhCaPhe';
-            //     ctx.fillText(message, msgX, msgY);
-            // }
+                const message = customMessage || 'TrinhCaPhe';
+                ctx.fillText(message, msgX, msgY);
+            }
 
             // 7. Output
             const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
