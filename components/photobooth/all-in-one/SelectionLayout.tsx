@@ -8,6 +8,7 @@ import { PhotoCropper } from '@/components/photo-cropper';
 const FRAME_ASSETS: Record<string, string> = {
     'frame-fpt': '/fpt.png',
     'frame-danang': '/frame-da-nang.png',
+    'frame-foodtour': '/frame-foodtour.png',
     'frame-bao-xuan': '/frame-bao-xuan.png',
     'frame-chuyen-tau': '/frame-chuyen-tau-thanh-xuan.png',
     'frame-final-1': '/frame-final.png',
