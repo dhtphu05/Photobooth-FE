@@ -9,6 +9,7 @@ const FRAME_OPTIONS = [
     { id: 'frame-fpt', label: 'FPT', image: '/fpt.png' },
     { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang.png' },
     { id: 'frame-foodtour', label: 'Food Tour', image: '/frame-foodtour.png' },
+    { id: 'frame-bk', label: 'BK', image: '/frame-bk.png' },
     { id: 'frame-bao-xuan', label: 'Báo Xuân', image: '/frame-bao-xuan.png' },
     { id: 'frame-chuyen-tau', label: 'Chuyến tàu', image: '/frame-chuyen-tau-thanh-xuan.png' },
     { id: 'frame-final-1', label: 'Final 1', image: '/frame-final.png' },
