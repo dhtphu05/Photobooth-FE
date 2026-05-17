@@ -217,7 +217,7 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
                 </div>
                 <div className="flex flex-col items-center gap-2">
                     <div className="text-sm font-bold text-gray-800 uppercase tracking-wide">
-                        📍 Trình Cà Phê - Phố Đi Bộ Bạch Đằng
+                        📍 Liên Chi đoàn Khoa Công nghệ Thông tin
                     </div>
                     <div className="px-6 py-2 rounded-full bg-black/5 border border-black/10 text-lg font-medium text-black">
                         {step === 'CONFIG' ? 'Chọn thời gian chụp' : 'Đang chụp ảnh...'}

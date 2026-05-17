@@ -296,7 +296,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                 <div className="text-center space-y-2 pb-4">
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Kỷ Niệm Của Bạn</h1>
                     <p className="text-sm font-medium text-gray-600 uppercase tracking-widest flex items-center justify-center gap-1">
-                        📍 Trình Cà Phê - Phố Đi Bộ Bạch Đằng
+                        Liên Chi đoàn Khoa Công nghệ Thông tin
                     </p>
                 </div>
 
