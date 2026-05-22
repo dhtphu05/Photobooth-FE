@@ -6,7 +6,7 @@ import { useCreateSession } from '@/api/endpoints/sessions/sessions';
 // Reuse FRAME_OPTIONS from config/constants if available, or define here for now
 const FRAME_OPTIONS = [
     { id: 'frame-3004', label: 'Bản tin 30/4', image: '/frame-3004.png' },
-    { id: 'frame-fpt', label: 'FPT', image: '/fpt.png' },
+    { id: 'frame-caphe', label: 'Cà phê', image: '/frame-caphe.png' },
     { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang.png' },
     { id: 'frame-foodtour', label: 'Food Tour', image: '/frame-foodtour.png' },
     { id: 'frame-bk', label: 'BK', image: '/frame-bk.png' },
