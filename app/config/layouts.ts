@@ -271,6 +271,18 @@ export const LAYOUTS: Record<string, LayoutConfig> = {
         overlay: DEFAULT_OVERLAY_CONFIG,
         showTextOverlay: false,
     },
+    'frame-totnghiep': {
+        frameId: 'frame-totnghiep',
+        photoCount: 3,
+        captureCount: 6,
+        slots: [
+            { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
+            { x: 0.038, y: 0.580, w: 0.445, h: 0.175 },
+            { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
     // Default fallback for other frames that need 3 photos
     'default_3_photo': {
         frameId: 'default_3_photo',
@@ -321,6 +333,7 @@ export const FRAME_ASSETS: Record<string, string> = {
     'frame-foodtour': '/frame-foodtour.png',
     'frame-bk': '/frame-bk.png',
     'frame-caphe': '/frame-caphe.png',
+    'frame-totnghiep': '/totnghiep.png',
 
 };
 
@@ -347,6 +360,7 @@ export const FRAME_TEXT_COLORS: Record<string, string> = {
     'frame-foodtour': '#a40000',
     'frame-bk': '#ffffffff',
     'frame-caphe': '#000000',
+    'frame-totnghiep': '#000000',
     // Default fallback
     'default': '#2c2c2c',
 };

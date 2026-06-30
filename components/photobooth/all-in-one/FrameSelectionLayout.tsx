@@ -7,6 +7,7 @@ import { useCreateSession } from '@/api/endpoints/sessions/sessions';
 const FRAME_OPTIONS = [
     { id: 'frame-3004', label: 'Bản tin 30/4', image: '/frame-3004.png' },
     { id: 'frame-caphe', label: 'Cà phê', image: '/frame-caphe.png' },
+    { id: 'frame-totnghiep', label: 'Tốt nghiệp', image: '/totnghiep.png' },
     { id: 'frame-danang', label: 'Đà Nẵng', image: '/frame-da-nang.png' },
     { id: 'frame-foodtour', label: 'Food Tour', image: '/frame-foodtour.png' },
     { id: 'frame-bk', label: 'BK', image: '/frame-bk.png' },
