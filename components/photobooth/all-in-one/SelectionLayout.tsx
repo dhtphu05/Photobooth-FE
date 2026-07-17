@@ -6,6 +6,10 @@ import { Pencil } from 'lucide-react';
 import { PhotoCropper } from '@/components/photo-cropper';
 
 const FRAME_ASSETS: Record<string, string> = {
+    'frame-mhx-1': '/frame_mhx_1.png',
+    'frame-mhx-2': '/frame_mhx_2.png',
+    'frame-mhx-3': '/frame_mhx_3.png',
+    'frame-mhx-4': '/frame_mhx_4.png',
     'frame-fpt': '/fpt.png',
     'frame-danang': '/frame-da-nang.png',
     'frame-foodtour': '/frame-foodtour.png',

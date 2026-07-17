@@ -5,6 +5,10 @@ import { useCreateSession } from '@/api/endpoints/sessions/sessions';
 
 // Reuse FRAME_OPTIONS from config/constants if available, or define here for now
 const FRAME_OPTIONS = [
+    { id: 'frame-mhx-1', label: 'MHX 1', image: '/frame_mhx_1.png' },
+    { id: 'frame-mhx-2', label: 'MHX 2', image: '/frame_mhx_2.png' },
+    { id: 'frame-mhx-3', label: 'MHX 3', image: '/frame_mhx_3.png' },
+    { id: 'frame-mhx-4', label: 'MHX 4', image: '/frame_mhx_4.png' },
     { id: 'frame-3004', label: 'Bản tin 30/4', image: '/frame-3004.png' },
     { id: 'frame-caphe', label: 'Cà phê', image: '/frame-caphe.png' },
     { id: 'frame-totnghiep', label: 'Tốt nghiệp', image: '/totnghiep.png' },

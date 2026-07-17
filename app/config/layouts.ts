@@ -74,6 +74,54 @@ export const DEFAULT_LAYOUT: LayoutConfig = {
 };
 
 export const LAYOUTS: Record<string, LayoutConfig> = {
+    'frame-mhx-1': {
+        frameId: 'frame-mhx-1',
+        photoCount: 3,
+        captureCount: 6,
+        slots: [
+            { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
+            { x: 0.038, y: 0.580, w: 0.445, h: 0.175 },
+            { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
+    'frame-mhx-2': {
+        frameId: 'frame-mhx-2',
+        photoCount: 3,
+        captureCount: 6,
+        slots: [
+            { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
+            { x: 0.038, y: 0.580, w: 0.445, h: 0.175 },
+            { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
+    'frame-mhx-3': {
+        frameId: 'frame-mhx-3',
+        photoCount: 3,
+        captureCount: 6,
+        slots: [
+            { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
+            { x: 0.038, y: 0.580, w: 0.445, h: 0.175 },
+            { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
+    'frame-mhx-4': {
+        frameId: 'frame-mhx-4',
+        photoCount: 3,
+        captureCount: 6,
+        slots: [
+            { x: 0.038, y: 0.195, w: 0.924, h: 0.365 },
+            { x: 0.038, y: 0.580, w: 0.445, h: 0.175 },
+            { x: 0.515, y: 0.770, w: 0.445, h: 0.175 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
     'frame-lich-xanh-duong': {
         frameId: 'frame-lich-xanh-duong',
         photoCount: 2,
@@ -311,6 +359,10 @@ export const getLayoutConfig = (frameId: string): LayoutConfig => {
 };
 
 export const FRAME_ASSETS: Record<string, string> = {
+    'frame-mhx-1': '/frame_mhx_1.png',
+    'frame-mhx-2': '/frame_mhx_2.png',
+    'frame-mhx-3': '/frame_mhx_3.png',
+    'frame-mhx-4': '/frame_mhx_4.png',
     'frame-fpt': '/fpt.png',
     'frame-danang': '/frame-da-nang.png',
     'frame-bao-xuan': '/frame-bao-xuan.png',
@@ -338,6 +390,10 @@ export const FRAME_ASSETS: Record<string, string> = {
 };
 
 export const FRAME_TEXT_COLORS: Record<string, string> = {
+    'frame-mhx-1': '#000000',
+    'frame-mhx-2': '#000000',
+    'frame-mhx-3': '#000000',
+    'frame-mhx-4': '#000000',
     'frame-danang': '#a40000',
     'frame-fpt': '#000000',
     'frame-bao-xuan': '#4e6f39',
