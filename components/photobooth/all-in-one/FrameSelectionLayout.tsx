@@ -6,6 +6,8 @@ import { useCreateSession } from '@/api/endpoints/sessions/sessions';
 // Reuse FRAME_OPTIONS from config/constants if available, or define here for now
 const FRAME_OPTIONS: { id: string; label: string; image: string; aspectRatio?: number }[] = [
     { id: 'frame-k26-anime', label: 'K26 Anime', image: '/frame_k26_anime.png', aspectRatio: 3281 / 4687 },
+    { id: 'frame-k26-anime-1', label: 'K26 Anime 1', image: '/frame_k26_anime_1.png', aspectRatio: 4405 / 6250 },
+    { id: 'frame-k26-anime-3', label: 'K26 Anime 3', image: '/frame_k26_anime_3.png', aspectRatio: 1050 / 1500 },
     { id: 'frame-ngang-4-k26', label: 'K26 Thiên Hà 4', image: '/frame_ngang_4_k26.png', aspectRatio: 6250 / 4405 },
     { id: 'frame-ngang-13-k26', label: 'K26 Thiên Hà', image: '/frame_ngang_13_k26.png', aspectRatio: 6250 / 4405 },
     { id: 'frame-mhx-1', label: 'MHX 1', image: '/frame_mhx_1.png' },

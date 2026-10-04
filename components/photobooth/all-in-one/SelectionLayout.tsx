@@ -7,6 +7,8 @@ import { PhotoCropper } from '@/components/photo-cropper';
 
 const FRAME_ASSETS: Record<string, string> = {
     'frame-k26-anime': '/frame_k26_anime.png',
+    'frame-k26-anime-1': '/frame_k26_anime_1.png',
+    'frame-k26-anime-3': '/frame_k26_anime_3.png',
     'frame-ngang-4-k26': '/frame_ngang_4_k26.png',
     'frame-ngang-13-k26': '/frame_ngang_13_k26.png',
     'frame-mhx-1': '/frame_mhx_1.png',

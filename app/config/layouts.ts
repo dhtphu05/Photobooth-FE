@@ -88,6 +88,32 @@ export const LAYOUTS: Record<string, LayoutConfig> = {
         overlay: DEFAULT_OVERLAY_CONFIG,
         showTextOverlay: false,
     },
+    'frame-k26-anime-3': {
+        frameId: 'frame-k26-anime-3',
+        photoCount: 3,
+        captureCount: 6,
+        canvasSize: { width: 2480, height: 3543 },
+        slots: [
+            { x: 0.04938, y: 0.12439, w: 0.90064, h: 0.34884 },
+            { x: 0.04846, y: 0.51291, w: 0.44285, h: 0.1724 },
+            { x: 0.51112, y: 0.789, w: 0.44285, h: 0.17303 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
+    'frame-k26-anime-1': {
+        frameId: 'frame-k26-anime-1',
+        photoCount: 3,
+        captureCount: 6,
+        canvasSize: { width: 2480, height: 3519 },
+        slots: [
+            { x: 0.05653, y: 0.21904, w: 0.88649, h: 0.352 },
+            { x: 0.51192, y: 0.63712, w: 0.43155, h: 0.168 },
+            { x: 0.05653, y: 0.75008, w: 0.43133, h: 0.16816 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
     'frame-ngang-4-k26': {
         frameId: 'frame-ngang-4-k26',
         photoCount: 4,
@@ -402,6 +428,8 @@ export const getLayoutConfig = (frameId: string): LayoutConfig => {
 
 export const FRAME_ASSETS: Record<string, string> = {
     'frame-k26-anime': '/frame_k26_anime.png',
+    'frame-k26-anime-1': '/frame_k26_anime_1.png',
+    'frame-k26-anime-3': '/frame_k26_anime_3.png',
     'frame-ngang-4-k26': '/frame_ngang_4_k26.png',
     'frame-ngang-13-k26': '/frame_ngang_13_k26.png',
     'frame-mhx-1': '/frame_mhx_1.png',
@@ -436,6 +464,8 @@ export const FRAME_ASSETS: Record<string, string> = {
 
 export const FRAME_TEXT_COLORS: Record<string, string> = {
     'frame-k26-anime': '#000000',
+    'frame-k26-anime-1': '#000000',
+    'frame-k26-anime-3': '#000000',
     'frame-ngang-4-k26': '#000000',
     'frame-ngang-13-k26': '#000000',
     'frame-mhx-1': '#000000',
