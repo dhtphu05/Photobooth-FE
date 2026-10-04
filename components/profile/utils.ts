@@ -18,7 +18,7 @@ import type {
   ProfileVisitedPlace,
 } from "@/components/profile/types"
 
-const API_BASE_URL = "https://api-photobooth.lcdkhoacntt-dut.live"
+const API_BASE_URL = "https://api-photobooth.lcdkhoacntt-dut.page"
 
 export const PROFILE_QUOTES: ProfileCardQuote[] = [
   {

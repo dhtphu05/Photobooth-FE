@@ -11,7 +11,7 @@ import type {
 } from "@/components/passport/types"
 import { getPlaceDisplayName } from "@/lib/danang-places"
 
-const API_BASE_URL = "https://api-photobooth.lcdkhoacntt-dut.live"
+const API_BASE_URL = "https://api-photobooth.lcdkhoacntt-dut.page"
 const FALLBACK_PHOTO_STRIP_URL = "/happy-person-1.jpg"
 const FALLBACK_PHOTO_STRIPS = ["/happy-person-1.jpg", "/happy-person-2.jpg", "/happy-person-3.jpg"]
 

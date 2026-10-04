@@ -20,7 +20,7 @@ const filterClasses: Record<Filter, string> = {
 
 const DEFAULT_FRAME_URL = 'https://cdn.freehihi.com/68fdab4e38d77.png';
 
-const API_BASE_URL = 'https://api-photobooth.lcdkhoacntt-dut.live';
+const API_BASE_URL = 'https://api-photobooth.lcdkhoacntt-dut.page';
 
 const getMediaUrl = (url?: string) => {
     if (!url) return '';
@@ -269,16 +269,16 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-pulse text-lg font-medium text-gray-500">Loading your memories...</div>
+            <div className="min-h-screen flex items-center justify-center bg-[url('/background.jpg')] bg-cover bg-center">
+                <div className="animate-pulse rounded-2xl bg-white/90 px-6 py-4 text-lg font-medium text-gray-700 shadow-lg backdrop-blur-sm">Loading your memories...</div>
             </div>
         );
     }
 
     if (isError || !session) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-lg font-medium text-red-500">Session not found or expired.</div>
+            <div className="min-h-screen flex items-center justify-center bg-[url('/background.jpg')] bg-cover bg-center">
+                <div className="rounded-2xl bg-white/90 px-6 py-4 text-lg font-medium text-red-500 shadow-lg backdrop-blur-sm">Session not found or expired.</div>
             </div>
         );
     }
@@ -290,10 +290,10 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
     const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     return (
-        <div className="min-h-screen bg-gray-100 py-8 px-4">
+        <div className="min-h-screen bg-[url('/background.jpg')] bg-cover bg-center bg-fixed py-8 px-4">
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Location Header */}
-                <div className="text-center space-y-2 pb-4">
+                <div className="rounded-2xl bg-white/90 p-4 text-center space-y-2 shadow-lg backdrop-blur-sm">
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Kỷ Niệm Của Bạn</h1>
                     <p className="text-sm font-medium text-gray-600 uppercase tracking-widest flex items-center justify-center gap-1">
                         Liên Chi đoàn Khoa Công nghệ Thông tin
@@ -318,7 +318,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                     </div>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                    <Card className="h-full flex flex-col">
+                    <Card className="h-full flex flex-col bg-white/90 backdrop-blur-sm">
                         <CardHeader>
                             <CardTitle className="text-center text-2xl md:text-3xl">Photo Strip</CardTitle>
                         </CardHeader>
@@ -388,7 +388,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                         </CardContent>
                     </Card>
 
-                    <Card className="h-full flex flex-col">
+                    <Card className="h-full flex flex-col bg-white/90 backdrop-blur-sm">
                         <CardHeader>
                             <CardTitle className="text-center text-2xl md:text-3xl">Video Recap</CardTitle>
                         </CardHeader>
@@ -428,7 +428,7 @@ export default function SharePage({ params }: { params: Promise<{ id: string }> 
                     </Card>
                 </div>
 
-                <Card>
+                <Card className="bg-white/90 backdrop-blur-sm">
                     <div className="pt-6 border-t flex flex-col items-center gap-6">
                             <div className="text-center space-y-2">
                                 <h3 className="font-semibold text-lg">Share with friends</h3>

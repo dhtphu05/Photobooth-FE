@@ -32,6 +32,7 @@ export interface LayoutConfig {
     photoCount: number; // Number of selected photos to print
     captureCount: number; // Total shots to capture depending on frame
     slots: Slot[];
+    canvasSize?: { width: number; height: number };
     overlay?: OverlayConfig; // Optional overlay config, fallback to default if missing
     showTextOverlay?: boolean;
 }
@@ -74,6 +75,47 @@ export const DEFAULT_LAYOUT: LayoutConfig = {
 };
 
 export const LAYOUTS: Record<string, LayoutConfig> = {
+    'frame-k26-anime': {
+        frameId: 'frame-k26-anime',
+        photoCount: 3,
+        captureCount: 6,
+        canvasSize: { width: 2480, height: 3543 },
+        slots: [
+            { x: 0.04938, y: 0.12439, w: 0.90064, h: 0.34884 },
+            { x: 0.04846, y: 0.51291, w: 0.44285, h: 0.1724 },
+            { x: 0.51112, y: 0.789, w: 0.44285, h: 0.17303 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
+    'frame-ngang-4-k26': {
+        frameId: 'frame-ngang-4-k26',
+        photoCount: 4,
+        captureCount: 6,
+        canvasSize: { width: 2500, height: 1762 },
+        slots: [
+            { x: 0.0624, y: 0.25153, w: 0.42832, h: 0.33757 },
+            { x: 0.50928, y: 0.25153, w: 0.42832, h: 0.33757 },
+            { x: 0.0624, y: 0.61203, w: 0.42832, h: 0.33757 },
+            { x: 0.50928, y: 0.61203, w: 0.42832, h: 0.33757 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
+    'frame-ngang-13-k26': {
+        frameId: 'frame-ngang-13-k26',
+        photoCount: 4,
+        captureCount: 6,
+        canvasSize: { width: 2500, height: 1762 },
+        slots: [
+            { x: 0.03024, y: 0.24608, w: 0.61712, h: 0.48309 },
+            { x: 0.66320, y: 0.24313, w: 0.29664, h: 0.23019 },
+            { x: 0.65648, y: 0.47923, w: 0.30384, h: 0.23837 },
+            { x: 0.66368, y: 0.73144, w: 0.29632, h: 0.22543 },
+        ],
+        overlay: DEFAULT_OVERLAY_CONFIG,
+        showTextOverlay: false,
+    },
     'frame-mhx-1': {
         frameId: 'frame-mhx-1',
         photoCount: 3,
@@ -359,6 +401,9 @@ export const getLayoutConfig = (frameId: string): LayoutConfig => {
 };
 
 export const FRAME_ASSETS: Record<string, string> = {
+    'frame-k26-anime': '/frame_k26_anime.png',
+    'frame-ngang-4-k26': '/frame_ngang_4_k26.png',
+    'frame-ngang-13-k26': '/frame_ngang_13_k26.png',
     'frame-mhx-1': '/frame_mhx_1.png',
     'frame-mhx-2': '/frame_mhx_2.png',
     'frame-mhx-3': '/frame_mhx_3.png',
@@ -390,6 +435,9 @@ export const FRAME_ASSETS: Record<string, string> = {
 };
 
 export const FRAME_TEXT_COLORS: Record<string, string> = {
+    'frame-k26-anime': '#000000',
+    'frame-ngang-4-k26': '#000000',
+    'frame-ngang-13-k26': '#000000',
     'frame-mhx-1': '#000000',
     'frame-mhx-2': '#000000',
     'frame-mhx-3': '#000000',

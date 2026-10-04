@@ -7,6 +7,7 @@ import { useBooth } from '@/context/BoothContext';
 // Import the direct API function for Promise.all usage, OR use the hook's mutateAsync
 import { useUploadSessionMedia, completeSession } from '@/api/endpoints/sessions/sessions';
 import { useStripComposer } from '@/hooks/useStripComposer';
+import { getLayoutConfig } from '@/app/config/layouts';
 export const CompletedLayout = ({
     videoBlob,
     videoUrl,
@@ -22,6 +23,10 @@ export const CompletedLayout = ({
         rawPhotos, rawVideoClips, selectedPhotoIndices, selectedFrameId, selectedFilter, customMessage, signatureData,
         sessionId, resetSession, isProcessing, setProcessing
     } = useBooth();
+    const layoutConfig = getLayoutConfig(selectedFrameId);
+    const isLandscapeFrame = Boolean(
+        layoutConfig.canvasSize && layoutConfig.canvasSize.width > layoutConfig.canvasSize.height
+    );
 
     const [uploadState, setUploadState] = useState<'idle' | 'generating' | 'uploading' | 'done'>('generating');
     const [progress, setProgress] = useState(0);
@@ -132,9 +137,9 @@ export const CompletedLayout = ({
 
     // Layout
     return (
-        <div className="flex flex-col h-full bg-gray-50 p-6 md:p-8">
+        <div className="flex flex-col h-full bg-transparent p-6 md:p-8">
             {uploadState !== 'done' ? (
-                <div className="flex flex-col items-center justify-center h-full animate-pulse space-y-6">
+                <div className="flex flex-col items-center justify-center h-full rounded-3xl bg-white/90 animate-pulse space-y-6 backdrop-blur-sm">
                     <Loader2 className="w-16 h-16 text-primary animate-spin" />
                     <h2 className="text-2xl font-bold text-gray-700">
                         {uploadState === 'generating' ? "Đang xử lý ảnh & video..." : "Đang tải lên dữ liệu..."}
@@ -156,10 +161,120 @@ export const CompletedLayout = ({
                     </div>
                 </div>
             ) : (
+                isLandscapeFrame ? (
+                    <div className="mx-auto flex h-full min-h-0 w-full max-w-[1600px] flex-col gap-4 overflow-y-auto">
+                        <header className="flex shrink-0 items-center justify-between rounded-2xl border border-white/70 bg-white/90 px-5 py-3 shadow-lg backdrop-blur-xl sm:px-7">
+                            <div className="flex items-center gap-3">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                                </span>
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">Khoảnh khắc của bạn</p>
+                                    <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl">Hoàn tất!</h1>
+                                </div>
+                            </div>
+                            <span className="hidden text-sm font-medium text-slate-500 sm:block">Ảnh đã sẵn sàng để tải về</span>
+                        </header>
+
+                        <main className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
+                            <section className="flex min-h-[420px] flex-col rounded-[1.75rem] border border-white/70 bg-white/90 p-4 shadow-2xl shadow-slate-950/15 backdrop-blur-xl sm:p-6 xl:min-h-0">
+                                <div className="mb-3 flex shrink-0 items-center justify-between gap-3 px-1">
+                                    <div>
+                                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">01 / Thành phẩm</p>
+                                        <h2 className="text-lg font-bold text-slate-900 sm:text-xl">Ảnh của bạn</h2>
+                                    </div>
+                                    <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-500">LANDSCAPE</span>
+                                </div>
+
+                                <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-[#25334a] p-3 shadow-inner sm:p-5">
+                                    {stripUrl ? (
+                                        <>
+                                            <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black/20 p-1 shadow-2xl sm:p-2">
+                                                <img
+                                                    src={stripUrl}
+                                                    alt="Ảnh photobooth hoàn tất"
+                                                    className="block h-full w-full object-contain"
+                                                />
+                                            </div>
+                                            <Button
+                                                size="lg"
+                                                className="shrink-0 gap-2 rounded-full bg-white px-7 font-bold text-slate-900 shadow-lg hover:bg-amber-50"
+                                                onClick={() => {
+                                                    const a = document.createElement('a');
+                                                    a.href = stripUrl;
+                                                    a.download = `photobooth-strip-${sessionId || 'capture'}.jpg`;
+                                                    a.click();
+                                                }}
+                                            >
+                                                <Download className="h-4 w-4" /> Tải ảnh chất lượng cao
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <div className="text-sm text-white/60">Đang tải ảnh...</div>
+                                    )}
+                                </div>
+                            </section>
+
+                            <aside className="flex min-h-[360px] flex-col justify-center gap-4 xl:min-h-0">
+                                <section className="rounded-[1.75rem] border border-white/70 bg-white/90 p-4 shadow-xl shadow-slate-950/10 backdrop-blur-xl sm:p-5">
+                                    <div className="mb-3 flex items-center justify-between gap-3">
+                                        <div>
+                                            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">02 / Chuyển động</p>
+                                            <h2 className="text-lg font-bold text-slate-900">Video recap</h2>
+                                        </div>
+                                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">PREVIEW</span>
+                                    </div>
+                                    <div
+                                        className="flex w-full items-center justify-center overflow-hidden rounded-xl bg-slate-950 shadow-inner"
+                                        style={{ aspectRatio: `${layoutConfig.canvasSize?.width ?? 16}/${layoutConfig.canvasSize?.height ?? 9}` }}
+                                    >
+                                        {videoUrl ? (
+                                            <video src={videoUrl} autoPlay muted loop playsInline className="h-full w-full object-contain" />
+                                        ) : (
+                                            <span className="text-sm text-white/50">Đang xử lý video...</span>
+                                        )}
+                                    </div>
+                                    {videoUrl && (
+                                        <Button
+                                            variant="outline"
+                                            className="mt-3 w-full gap-2 rounded-xl border-slate-200 font-semibold"
+                                            onClick={() => {
+                                                const a = document.createElement('a');
+                                                a.href = videoUrl;
+                                                a.download = `photobooth-recap-${sessionId || 'capture'}.webm`;
+                                                a.click();
+                                            }}
+                                        >
+                                            <Download className="h-4 w-4" /> Tải video
+                                        </Button>
+                                    )}
+                                </section>
+
+                                <section className="flex items-center gap-4 rounded-[1.75rem] border border-white/70 bg-white/90 p-4 shadow-xl shadow-slate-950/10 backdrop-blur-xl sm:p-5">
+                                    <div className="shrink-0 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+                                        {shareUrl ? (
+                                            <QRCode value={shareUrl} size={104} style={{ height: 'auto', maxWidth: '100%', width: '104px' }} viewBox="0 0 256 256" />
+                                        ) : (
+                                            <div className="flex h-[104px] w-[104px] items-center justify-center bg-slate-100 text-xs text-slate-400">Offline</div>
+                                        )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">03 / Lưu về máy</p>
+                                        <h2 className="mt-1 text-lg font-bold leading-tight text-slate-900">Quét mã QR</h2>
+                                        <p className="mt-1 text-sm text-slate-500">Mở ảnh trên điện thoại của bạn.</p>
+                                        <Button onClick={resetSession} variant="outline" className="mt-3 w-full gap-2 rounded-xl border-slate-200 font-semibold">
+                                            <RefreshCcw className="h-4 w-4" /> Chụp lượt mới
+                                        </Button>
+                                    </div>
+                                </section>
+                            </aside>
+                        </main>
+                    </div>
+                ) : (
                 <div className="flex flex-col h-full max-w-6xl mx-auto w-full space-y-4 animate-in fade-in zoom-in duration-500 justify-center">
 
                     {/* Header */}
-                    <div className="text-center shrink-0">
+                    <div className="rounded-2xl bg-white/90 p-4 text-center shrink-0 shadow-lg backdrop-blur-sm">
                         <div className="bg-green-100 text-green-700 p-2 rounded-full inline-block mb-2">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                         </div>
@@ -211,7 +326,7 @@ export const CompletedLayout = ({
                         <div className="lg:col-span-8 h-full min-h-0 grid grid-cols-2 gap-8 items-center justify-center">
 
                             {/* Photo Strip */}
-                            <div className="flex flex-col h-full bg-gray-100/50 rounded-3xl border-2 border-dashed border-gray-200 p-10 items-center justify-center relative">
+                            <div className="flex flex-col h-full bg-white/80 rounded-3xl border-2 border-dashed border-gray-200 p-10 items-center justify-center relative backdrop-blur-sm">
                                 <h3 className="text-xl font-semibold text-gray-700 shrink-0 mb-4">Photo Strip</h3>
                                 <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 gap-4">
                                     {stripUrl ? (
@@ -245,7 +360,7 @@ export const CompletedLayout = ({
                             </div>
 
                             {/* Video Recap */}
-                            <div className="flex flex-col h-full bg-gray-100/50 rounded-3xl border-2 border-dashed border-gray-200 p-10 items-center justify-center relative">
+                            <div className="flex flex-col h-full bg-white/80 rounded-3xl border-2 border-dashed border-gray-200 p-10 items-center justify-center relative backdrop-blur-sm">
                                 <h3 className="text-xl font-semibold text-gray-700 shrink-0 mb-4">Video Recap</h3>
                                 <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 gap-4">
                                     {videoUrl ? (
@@ -285,6 +400,7 @@ export const CompletedLayout = ({
                         </div>
                     </div>
                 </div>
+                )
             )
             }
         </div >

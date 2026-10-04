@@ -3,9 +3,9 @@
 This guide provides everything you need to build the **Controller App** (iPad), **Monitor App** (Big Screen), and **Share Page** (User Phone).
 
 ## 1. Connection Details
-- **Base URL**: `https://api-photobooth.lcdkhoacntt-dut.live`
-- **Swagger JSON**: `https://api-photobooth.lcdkhoacntt-dut.live/api/docs-json`
-- **Socket URL**: `https://api-photobooth.lcdkhoacntt-dut.live`
+- **Base URL**: `https://api-photobooth.lcdkhoacntt-dut.page`
+- **Swagger JSON**: `https://api-photobooth.lcdkhoacntt-dut.page/api/docs-json`
+- **Socket URL**: `https://api-photobooth.lcdkhoacntt-dut.page`
 
 ---
 
@@ -28,7 +28,7 @@ Instead of writing manual fetch calls, generate typed hooks.
           client: 'react-query',
         },
         input: {
-          target: 'https://api-photobooth.lcdkhoacntt-dut.live/api/docs-json',
+          target: 'https://api-photobooth.lcdkhoacntt-dut.page/api/docs-json',
         },
       },
     });
@@ -48,7 +48,7 @@ Used to sync the Controller (iPad) with the Monitor.
     import { io, Socket } from 'socket.io-client';
     import { ServerToClientEvents, ClientToServerEvents } from './booth.events';
 
-    export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io('https://api-photobooth.lcdkhoacntt-dut.live');
+    export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io('https://api-photobooth.lcdkhoacntt-dut.page');
     ```
 
 ### Socket Events Reference

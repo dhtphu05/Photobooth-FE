@@ -6,6 +6,9 @@ import { Pencil } from 'lucide-react';
 import { PhotoCropper } from '@/components/photo-cropper';
 
 const FRAME_ASSETS: Record<string, string> = {
+    'frame-k26-anime': '/frame_k26_anime.png',
+    'frame-ngang-4-k26': '/frame_ngang_4_k26.png',
+    'frame-ngang-13-k26': '/frame_ngang_13_k26.png',
     'frame-mhx-1': '/frame_mhx_1.png',
     'frame-mhx-2': '/frame_mhx_2.png',
     'frame-mhx-3': '/frame_mhx_3.png',
@@ -54,19 +57,17 @@ export const SelectionLayout = () => {
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
 
-            // Determine Canvas Size (High Res)
-            const frameWidth = 2480;
-            const frameHeight = 3508;
+            const layoutConfig = getLayoutConfig(selectedFrameId);
+            const { width: frameWidth, height: frameHeight } = layoutConfig.canvasSize ?? { width: 2480, height: 3508 };
 
-            canvas.width = frameWidth / 4;
-            canvas.height = frameHeight / 4;
+            canvas.width = Math.round(frameWidth / 4);
+            canvas.height = Math.round(frameHeight / 4);
 
             // Draw Background
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Prepare selected photos for available slots
-            const layoutConfig = getLayoutConfig(selectedFrameId);
             const slots = layoutConfig.slots;
 
             // Get selected photos (images)
@@ -131,9 +132,9 @@ export const SelectionLayout = () => {
 
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+        <div className="flex flex-col h-full bg-transparent overflow-hidden">
             {/* Top: Large Preview (Filled Frame) - Centered */}
-            <div className="flex-1 relative bg-gray-100 flex items-center justify-center p-4 overflow-hidden shadow-inner min-h-0">
+            <div className="flex-1 relative bg-white/75 flex items-center justify-center p-4 overflow-hidden shadow-inner backdrop-blur-sm min-h-0">
                 <canvas ref={canvasRef} className="hidden" /> {/* Hidden canvas for processing */}
 
                 {previewUrl ? (
@@ -150,7 +151,7 @@ export const SelectionLayout = () => {
             </div>
 
             {/* Bottom: Selection Grid & Actions - Scrollable if needed */}
-            <div className="flex-shrink-0 bg-white z-10 w-full relative p-4 pb-8 flex flex-col items-center shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <div className="flex-shrink-0 bg-white/90 z-10 w-full relative p-4 pb-8 flex flex-col items-center shadow-[0_-4px_20px_rgba(0,0,0,0.05)] backdrop-blur-sm">
 
                 <div className="text-center mb-4">
                     <h2 className="text-xl font-bold text-gray-900">Chọn ảnh</h2>

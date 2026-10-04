@@ -19,7 +19,7 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
     const {
         timerDuration, step, capturedCount, totalShots,
         captureRequestId, registerCapturedPhoto, acknowledgeCapture,
-        photoPreviews, takeShot, sessionId, setTimer
+        photoPreviews, takeShot, setTimer
     } = useBooth();
 
     // --- Countdown Logic Reuse ---
@@ -208,23 +208,20 @@ export const CaptureLayout = ({ webcamRef }: CaptureLayoutProps) => {
     }, [captureRequestId, timerDuration, beginCountdown]);
 
     return (
-        <div className="min-h-screen bg-white text-black flex flex-col p-6 gap-6 justify-between animate-in fade-in duration-500">
+        <div className="min-h-screen bg-transparent text-black flex flex-col p-6 gap-6 justify-between animate-in fade-in duration-500">
             {/* Header Info - Matching Monitor */}
-            <div className="flex justify-between items-center w-full max-w-7xl mx-auto z-10">
-                <div>
-                    <p className="text-xs text-black/60 uppercase tracking-widest">Session</p>
-                    <p className="font-mono text-lg font-bold">{sessionId || '—'}</p>
-                </div>
+            <div className="grid grid-cols-3 items-center w-full max-w-7xl mx-auto z-10">
+                <div aria-hidden="true" />
                 <div className="flex flex-col items-center gap-2">
-                    <div className="text-sm font-bold text-gray-800 uppercase tracking-wide">
+                    <div className="rounded-full bg-white/90 px-4 py-2 text-sm font-bold uppercase tracking-wide text-black shadow-lg backdrop-blur-sm">
                         📍 Liên Chi đoàn Khoa Công nghệ Thông tin
                     </div>
-                    <div className="px-6 py-2 rounded-full bg-black/5 border border-black/10 text-lg font-medium text-black">
+                    <div className="rounded-full border border-white/50 bg-white/90 px-6 py-2 text-lg font-medium text-black shadow-lg backdrop-blur-sm">
                         {step === 'CONFIG' ? 'Chọn thời gian chụp' : 'Đang chụp ảnh...'}
                     </div>
                 </div>
-                <div className="text-right">
-                    <p className="text-xs text-black/60 uppercase tracking-widest">Shots</p>
+                <div className="justify-self-end rounded-xl bg-white/90 px-4 py-2 text-right text-black shadow-lg backdrop-blur-sm">
+                    <p className="text-xs uppercase tracking-widest text-black/60">Shots</p>
                     <p className="font-mono text-lg font-bold">{capturedCount} / {totalShots}</p>
                 </div>
             </div>

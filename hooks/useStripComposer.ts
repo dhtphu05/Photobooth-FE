@@ -47,9 +47,13 @@ export const useStripComposer = ({
 
             // 2. Setup Canvas
             const canvas = document.createElement('canvas');
-            const isCustomFrame = ['frame-danang', 'frame-foodtour', 'frame-bk', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den', 'frame-xtn', 'frame-my-khe', 'frame-linh-ung', 'frame-cho-han', 'frame-3004', 'frame-caphe', 'frame-totnghiep', 'frame-mhx-1', 'frame-mhx-2', 'frame-mhx-3', 'frame-mhx-4'].includes(selectedFrameId);
+            const isCustomFrame = ['frame-danang', 'frame-foodtour', 'frame-bk', 'frame-bao-xuan', 'frame-chuyen-tau', 'frame-final-1', 'frame-cuoi-1', 'frame-cuoi-2', 'frame-cuoi-3', 'frame-quan-su', 'frame-lich-xanh-duong', 'frame-lich-hong', 'frame-lich-xanh', 'frame-lich-xam', 'frame-lich-den', 'frame-xtn', 'frame-my-khe', 'frame-linh-ung', 'frame-cho-han', 'frame-3004', 'frame-caphe', 'frame-totnghiep', 'frame-mhx-1', 'frame-mhx-2', 'frame-mhx-3', 'frame-mhx-4', 'frame-ngang-13-k26', 'frame-ngang-4-k26', 'frame-k26-anime'].includes(selectedFrameId);
+            const layoutConfig = getLayoutConfig(selectedFrameId);
 
-            if (isCustomFrame) {
+            if (layoutConfig.canvasSize) {
+                canvas.width = layoutConfig.canvasSize.width;
+                canvas.height = layoutConfig.canvasSize.height;
+            } else if (isCustomFrame) {
                 canvas.width = 2480;
                 canvas.height = 3508;
             } else {
@@ -69,7 +73,6 @@ export const useStripComposer = ({
             ctx.filter = filterStr;
 
             const bitmaps = await Promise.all(selectedBlobs.map(b => createImageBitmap(b)));
-            const layoutConfig = getLayoutConfig(selectedFrameId);
             const slots = layoutConfig.slots;
 
             slots.forEach((slot, index) => {

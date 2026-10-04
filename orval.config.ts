@@ -9,7 +9,7 @@ export default defineConfig({
             client: 'react-query',
         },
         input: {
-            target: 'https://api-photobooth.lcdkhoacntt-dut.live/api/docs-json',
+            target: 'https://api-photobooth.lcdkhoacntt-dut.page/api/docs-json',
         },
     },
 });

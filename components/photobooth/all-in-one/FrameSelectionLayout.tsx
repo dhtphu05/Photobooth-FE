@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button';
 import { useCreateSession } from '@/api/endpoints/sessions/sessions';
 
 // Reuse FRAME_OPTIONS from config/constants if available, or define here for now
-const FRAME_OPTIONS = [
+const FRAME_OPTIONS: { id: string; label: string; image: string; aspectRatio?: number }[] = [
+    { id: 'frame-k26-anime', label: 'K26 Anime', image: '/frame_k26_anime.png', aspectRatio: 3281 / 4687 },
+    { id: 'frame-ngang-4-k26', label: 'K26 Thiên Hà 4', image: '/frame_ngang_4_k26.png', aspectRatio: 6250 / 4405 },
+    { id: 'frame-ngang-13-k26', label: 'K26 Thiên Hà', image: '/frame_ngang_13_k26.png', aspectRatio: 6250 / 4405 },
     { id: 'frame-mhx-1', label: 'MHX 1', image: '/frame_mhx_1.png' },
     { id: 'frame-mhx-2', label: 'MHX 2', image: '/frame_mhx_2.png' },
     { id: 'frame-mhx-3', label: 'MHX 3', image: '/frame_mhx_3.png' },
@@ -66,8 +69,8 @@ export const FrameSelectionLayout = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 p-6">
-            <div className="mb-6 text-center space-y-2">
+        <div className="flex flex-col h-full bg-transparent p-6">
+            <div className="mb-6 rounded-2xl bg-white/90 p-4 text-center space-y-2 shadow-lg backdrop-blur-sm">
                 <h1 className="text-3xl font-bold uppercase tracking-wide text-gray-900">1. Chọn Khung Ảnh</h1>
                 <p className="text-muted-foreground">Chạm vào khung bạn thích để chọn</p>
             </div>
@@ -87,7 +90,8 @@ export const FrameSelectionLayout = () => {
                         <button
                             key={frame.id}
                             onClick={() => setFrame(frame.id)}
-                            className={`relative group rounded-xl overflow-hidden aspect-[2480/3508] transition-all duration-300 ${selectedFrameId === frame.id
+                            style={{ aspectRatio: frame.aspectRatio ?? 2480 / 3508 }}
+                            className={`relative group rounded-xl overflow-hidden transition-all duration-300 ${selectedFrameId === frame.id
                                 ? 'ring-4 ring-black shadow-2xl scale-[1.02]'
                                 : 'ring-1 ring-gray-200 hover:ring-2 hover:ring-gray-300 hover:scale-[1.01]'
                                 }`}

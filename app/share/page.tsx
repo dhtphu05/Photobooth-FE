@@ -34,9 +34,9 @@ export default function SharePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[url('/background.jpg')] bg-cover bg-center bg-fixed flex flex-col">
       <motion.div
-        className="text-center py-6 border-b border-zinc-200"
+        className="bg-white/90 text-center py-6 border-b border-zinc-200 shadow-lg backdrop-blur-sm"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -52,7 +52,7 @@ export default function SharePage() {
             transition={{ delay: 0.1 }}
           >
             <Tabs defaultValue="photo" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-zinc-100 rounded-full p-1 mb-6">
+              <TabsList className="grid w-full grid-cols-2 bg-white/90 rounded-full p-1 mb-6 shadow-lg backdrop-blur-sm">
                 <TabsTrigger
                   value="photo"
                   className="rounded-full data-[state=active]:bg-black data-[state=active]:text-white"
@@ -69,7 +69,7 @@ export default function SharePage() {
 
               {/* Tab 1: Photo Strip */}
               <TabsContent value="photo" className="space-y-4">
-                <Card className="rounded-2xl p-4 bg-white border-2 border-black">
+                <Card className="rounded-2xl p-4 bg-white/90 border-2 border-black backdrop-blur-sm">
                   <div className="relative w-full max-w-[320px] mx-auto overflow-hidden rounded-xl">
                     {/* Layer 1: Vertical Stack of 4 Photos */}
                     <div className="relative z-0 flex flex-col gap-0">
@@ -107,7 +107,7 @@ export default function SharePage() {
 
               {/* Tab 2: Video Recap */}
               <TabsContent value="video" className="space-y-4">
-                <Card className="rounded-2xl p-4 bg-white border-2 border-black">
+                <Card className="rounded-2xl p-4 bg-white/90 border-2 border-black backdrop-blur-sm">
                   <div className="relative w-full max-w-[320px] mx-auto overflow-hidden rounded-xl bg-black">
                     {/* Layer 1: The 4 Video Clips stacked vertically */}
                     <div className="relative z-0 flex flex-col">
@@ -148,7 +148,7 @@ export default function SharePage() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <h2 className="text-xl font-bold text-black mb-4">Ảnh Từng Tấm (Raw)</h2>
+            <h2 className="inline-block rounded-xl bg-white/90 px-4 py-2 text-xl font-bold text-black mb-4 shadow-lg backdrop-blur-sm">Ảnh Từng Tấm (Raw)</h2>
             <div className="grid grid-cols-2 gap-4">
               {mockData.individualPhotos.map((photoUrl, index) => (
                 <div key={index} className="flex flex-col gap-2">
@@ -177,7 +177,7 @@ export default function SharePage() {
 
       {/* Sticky Bottom Action */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t-2 border-black"
+        className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 border-t-2 border-black shadow-lg backdrop-blur-sm"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}

@@ -70,9 +70,9 @@ export const ReviewLayout = () => {
     };
 
     return (
-        <div className="flex h-full bg-white">
+        <div className="flex h-full bg-transparent">
             {/* Left/Center: Final Preview Mockup */}
-            <div className="flex-1 bg-gray-100 flex items-center justify-center p-8 relative overflow-hidden">
+            <div className="flex-1 bg-white/75 flex items-center justify-center p-8 relative overflow-hidden backdrop-blur-sm">
                 <div className="absolute inset-0 bg-[url('/bg-pattern.png')] opacity-5"></div>
 
                 {isThinking ? (
@@ -94,7 +94,7 @@ export const ReviewLayout = () => {
             </div>
 
             {/* Right: Controls Panel */}
-            <div className="w-full max-w-md bg-white border-l border-gray-200 flex flex-col p-8 z-10 shadow-xl">
+            <div className="w-full max-w-md bg-white/90 border-l border-gray-200 flex flex-col p-8 z-10 shadow-xl backdrop-blur-sm">
                 <div className="mb-8 text-center pt-8">
                     <h2 className="text-3xl font-bold mb-2">Chỉnh sửa cuối</h2>
                     <p className="text-gray-500">

@@ -153,7 +153,7 @@ const AllInOneContent = () => {
     };
 
     return (
-        <div className="w-full h-screen overflow-hidden text-gray-900 bg-white font-sans">
+        <div className="w-full h-screen overflow-hidden bg-[url('/background.jpg')] bg-cover bg-center text-gray-900 font-sans">
             {renderStep()}
         </div>
     );

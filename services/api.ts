@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Ensure base URL is set (can also rely on global config in providers.tsx)
 const api = axios.create({
-    baseURL: 'https://api-photobooth.lcdkhoacntt-dut.live',
+    baseURL: 'https://api-photobooth.lcdkhoacntt-dut.page',
 });
 
 export const uploadImage = async (sessionId: string, file: Blob): Promise<string> => {

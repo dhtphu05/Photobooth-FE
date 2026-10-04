@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
 import axios from 'axios';
 
-axios.defaults.baseURL = 'https://api-photobooth.lcdkhoacntt-dut.live';
+axios.defaults.baseURL = 'https://api-photobooth.lcdkhoacntt-dut.page';
 
 
 export default function Providers({ children }: { children: ReactNode }) {
